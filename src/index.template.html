@@ -1,45 +1,332 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= productName %></title>
+<head>
+	<meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Web Audio Spacialisation</title>
+  <meta name="description" content="Panner node demo for Web Audio API">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
 
-    <meta charset="utf-8" />
-    <meta name="description" content="<%= productDescription %>" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta name="msapplication-tap-highlight" content="no" />
-    <meta
-      name="viewport"
-      content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width<% if (ctx.mode.cordova || ctx.mode.capacitor) { %>, viewport-fit=cover<% } %>"
-    />
+<div id="boombox">
 
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="128x128"
-      href="icons/favicon-128x128.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="96x96"
-      href="icons/favicon-96x96.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="icons/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="icons/favicon-16x16.png"
-    />
-    <link rel="icon" type="image/ico" href="favicon.ico" />
-  </head>
-  <body>
-    <!-- DO NOT touch the following DIV -->
-    <div id="q-app"></div>
-  </body>
+	<div class="boombox-body">
+
+		<div class="bb-front">
+
+			<section class="master-controls">
+				<input type="range" id="volume" class="control-volume" min="0" max="2" value="1" list="gain-vals" step="0.01" data-action="volume" />
+				<datalist id="gain-vals">
+					<option value="0" label="min"></option>
+					<option value="2" label="max"></option>
+				</datalist>
+				<label for="volume">VOL</label>
+
+				<input type="range" id="panner" class="control-panner" list="pan-vals" min="-1" max="1" value="0" step="0.01" data-action="panner" />
+				<datalist id="pan-vals">
+					<option value="-1" label="left"></option>
+					<option value="1" label="right"></option>
+				</datalist>
+				<label for="panner">Zob</label>
+
+				<button class="control-power" role="switch" aria-checked="false" data-power="on">
+					<span>On/Off</span>
+				</button>
+			</section>
+
+			<section class="tape">
+
+				<audio src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/858/outfoxing.mp3" crossorigin="anonymous"></audio>
+
+				<button data-playing="false" class="tape-controls-play" role="switch" aria-checked="false">
+					<span>Play/Pause</span>
+				</button>
+			</section>
+		</div><!--bb-front-->
+
+		<div class="bb-top"></div>
+		<div class="bb-right"></div>
+		<div class="bb-bottom"></div>
+		<div class="bb-left"></div>
+		<div class="bb-back"></div>
+
+
+	</div><!-- boombox-body -->
+
+</div>
+<div id="show position" aria-labelledby="move-boombox">
+</div>
+<div id="move-controls" aria-labelledby="move-boombox">
+	<h3 id="move-boombox">change Boombox</h3>
+
+	<section class="move-controls_xy">
+		<button data-control="left" aria-labelledby="move-boombox left-label">
+			<span id="left-label">Left</span>
+		</button>
+		<button data-control="up" aria-labelledby="move-boombox up-label">
+			<span id="up-label">Up</span>
+		</button>
+		<button data-control="right" aria-labelledby="move-boombox right-label">
+			<span id="right-label">Right</span>
+		</button>
+		<button data-control="down" aria-labelledby="move-boombox down-label">
+			<span id="down-label">Down</span>
+		</button>
+	</section>
+
+	<section class="move-controls_z">
+		<button data-control="backward" aria-labelledby="move-boombox back-label">
+			<span id="back-label">Back</span>
+		</button>
+		<button data-control="forward" aria-labelledby="move-boombox for-label">
+			<span id="for-label">Forward</span>
+		</button>
+	</section>
+
+</div>
+
+<script type="module">
+  import {initListener, initPannerNode, moveSource} from './lib/audio_lib.js';
+
+  console.clear();
+  // instigate our audio context ~~~~~~~~~~~~~~~ 1
+
+  // for cross browser way
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AudioContext();
+  let listener;
+  let panner;
+
+  // Initialisation of the listener position and orientation
+  var listenerPos = {posX: window.innerWidth/2,
+    posY: window.innerHeight/2,
+    posZ: -5 };
+
+  var listenerOri = {fwdX: 0,
+  fwdY: 0,
+  fwdZ: -1,
+  upX: 0,
+  upY: 1,
+  upZ: 0 };
+
+  listener = initListener(audioCtx, listenerPos, listenerOri);
+
+  // Initialization of the source position and orientation
+  var sourcePos = {posX: window.innerWidth/2,
+    posY: window.innerHeight/2,
+    posZ: -5 };
+
+  var sourceOri = {X: 0.0, Y: 0.0, Z: -1.0};
+  
+  panner = initPannerNode(audioCtx, sourcePos, sourceOri);
+
+  // Initialization of the steps and bounds
+  var bounds = {left: 0,
+    right: window.innerWidth,
+    down: 0,
+    up: window.innerHeight,
+    forward: 500,
+    backward: -500}
+  
+  var steps = {X: window.innerWidth/50,
+    Y: windox.innerHeight/50,
+    Z: 25*bounds.forward
+  }
+
+  const moveControls = document.querySelector('#move-controls').querySelectorAll('button');
+  const boombox = document.querySelector('.boombox-body');
+
+	moveControls.forEach(function(el) {
+
+    let moving;
+    el.addEventListener('mousedown', function() {
+
+      let direction = this.dataset.control;
+      moving = moveBoombox(direction);
+
+    }, false);
+
+    window.addEventListener('mouseup', function() {
+      if (moving && moving.frameId) {
+        window.cancelAnimationFrame(moving.frameId);
+      }
+    }, false)
+
+  })
+
+    // function for setting the panner values and changing the styling
+    function moveBoombox(direction, prevMove) {
+      switch (direction) {
+        case 'left':
+          if (transform.xAxis > leftBound) {
+            transform.xAxis -= 5;
+            panner.positionX.value -= 0.1;
+          }
+        break;
+        case 'up':
+          if (transform.yAxis > topBound) {
+            transform.yAxis -= 5;
+            panner.positionY.value -= 0.3;
+          }
+        break;
+        case 'right':
+          if (transform.xAxis < rightBound) {
+            transform.xAxis += 5;
+            panner.positionX.value += 0.1;
+          }
+        break;
+        case 'down':
+          if (transform.yAxis < bottomBound) {
+            transform.yAxis += 5;
+            panner.positionY.value += 0.3;
+          }
+        break;
+        case 'back':
+          if (transform.zAxis > innerBound) {
+            transform.zAxis -= 0.01;
+            panner.positionZ.value -= 20;
+          }
+        break;
+        case 'forward':
+          if (transform.zAxis < outerBound) {
+            transform.zAxis += 0.01;
+            panner.positionZ.value += 20;
+          }
+        break;
+        case 'rotate-right':
+          transform.rotateY += degreesY;
+          console.log(transform.rotateY);
+          // 'left' is rotation about y-axis with negative angle increment
+          z = panner.orientationZ.value*Math.cos(-q) - panner.orientationX.value*Math.sin(-q);
+          x = panner.orientationZ.value*Math.sin(-q) + panner.orientationX.value*Math.cos(-q);
+          y = panner.orientationY.value;
+
+          panner.orientationX.value = x;
+          panner.orientationY.value = y;
+          panner.orientationZ.value = z;
+        break;
+        case 'rotate-left':
+          transform.rotateY -= degreesY;
+          // 'right' is rotation about y-axis with positive angle increment
+          z = panner.orientationZ.value*Math.cos(q) - panner.orientationX.value*Math.sin(q);
+          x = panner.orientationZ.value*Math.sin(q) + panner.orientationX.value*Math.cos(q);
+          y = panner.orientationY.value;
+          panner.orientationX.value = x;
+          panner.orientationY.value = y;
+          panner.orientationZ.value = z;
+        break;
+        case 'rotate-up':
+        transform.rotateX += degreesX;
+          // 'up' is rotation about x-axis with negative angle increment
+          z = panner.orientationZ.value*Math.cos(-q) - panner.orientationY.value*Math.sin(-q);
+          y = panner.orientationZ.value*Math.sin(-q) + panner.orientationY.value*Math.cos(-q);
+          x = panner.orientationX.value;
+          panner.orientationX.value = x;
+          panner.orientationY.value = y;
+          panner.orientationZ.value = z;
+        break;
+        case 'rotate-down':
+          transform.rotateX -= degreesX;
+          // 'down' is rotation about x-axis with positive angle increment
+          z = panner.orientationZ.value*Math.cos(q) - panner.orientationY.value*Math.sin(q);
+          y = panner.orientationZ.value*Math.sin(q) + panner.orientationY.value*Math.cos(q);
+          x = panner.orientationX.value;
+          panner.orientationX.value = x;
+          panner.orientationY.value = y;
+          panner.orientationZ.value = z;
+        break;
+      }
+
+      boombox.style.transform = 'translateX('+transform.xAxis+'px) translateY('+transform.yAxis+'px) scale('+transform.zAxis+') rotateY('+transform.rotateY+'deg) rotateX('+transform.rotateX+'deg)';
+
+      const move = prevMove || {};
+      move.frameId = requestAnimationFrame(() => moveBoombox(direction, move));
+      return move;
+    }
+
+
+    moveControls.forEach(function(el) {
+      el.addEventListener('mousedown', function() {
+
+        let direction = this.dataset.control;
+        moveSource(direction, panner, bounds, steps);
+
+      }, false)
+    })
+
+    const track = audioCtx.createMediaElementSource(audioElement);
+
+    // if track ends - an event is fired once the track ends via the audio api. We can listen for this and set the correct params on the html element
+    audioElement.addEventListener('ended', () => {
+      playButton.dataset.playing = 'false';
+      playButton.setAttribute( "aria-checked", "false" );
+    }, false);
+
+    // volume ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 4
+    const gainNode = audioCtx.createGain();
+
+    const volumeControl = document.querySelector('[data-action="volume"]');
+    volumeControl.addEventListener('input', function() {
+      gainNode.gain.value = this.value;
+    }, false);
+
+    const pannerOptions = {pan: 0};
+    const stereoPanner = new StereoPannerNode(audioCtx, pannerOptions);
+    const pannerControl = document.querySelector('[data-action="panner"]');
+    pannerControl.addEventListener('input', function() {
+      stereoPanner.pan.value = this.value;
+    }, false);
+
+    track.connect(gainNode).connect(stereoPanner).connect(panner).connect(audioCtx.destination);
+
+    const powerButton = document.querySelector('.control-power');
+
+    powerButton.addEventListener('click', function() {
+      if (this.dataset.power === 'on') {
+        audioCtx.suspend();
+        this.dataset.power = 'off';
+      } else if (this.dataset.power === 'off') {
+        audioCtx.resume();
+        this.dataset.power = 'on';
+      }
+      this.setAttribute( "aria-checked", audioCtx.state ? "false" : "true" );
+      console.log(audioCtx.state);
+    }, false);
+
+
+  // BOOMBOX FUNCTIONALITY HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2
+  const audioElement = document.querySelector('audio');
+
+  const playButton = document.querySelector('.tape-controls-play');
+
+  // play pause audio
+  playButton.addEventListener('click', function() {
+    if(!audioCtx) {
+      init();
+    }
+
+    // check if context is in suspended state (autoplay policy)
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    if (this.dataset.playing === 'false') {
+      audioElement.play();
+      this.dataset.playing = 'true';
+    // if track is playing pause it
+    } else if (this.dataset.playing === 'true') {
+      audioElement.pause();
+      this.dataset.playing = 'false';
+    }
+
+    let state = this.getAttribute('aria-checked') === "true" ? true : false;
+    this.setAttribute( 'aria-checked', state ? "false" : "true" );
+
+  }, false);
+
+</script>
+
+</body>
 </html>
