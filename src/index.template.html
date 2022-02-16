@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<div id="boombox">
+<div id="">
 
 	<div class="boombox-body">
 
@@ -22,14 +22,14 @@
 					<option value="0" label="min"></option>
 					<option value="2" label="max"></option>
 				</datalist>
-				<label for="volume">VOLu</label>
+				<label for="volume">VOL</label>
 
 				<input type="range" id="panner" class="control-panner" list="pan-vals" min="-1" max="1" value="0" step="0.01" data-action="panner" />
 				<datalist id="pan-vals">
 					<option value="-1" label="left"></option>
 					<option value="1" label="right"></option>
 				</datalist>
-				<label for="panner">Zob</label>
+				<label for="panner">Pan</label>
 
 				<button class="control-power" role="switch" aria-checked="false" data-power="on">
 					<span>On/Off</span>
@@ -74,6 +74,7 @@
 		<button data-control="down" aria-labelledby="move-boombox down-label">
 			<span id="down-label">Down</span>
 		</button>
+		<input_value/>
 	</section>
 
 	<section class="move-controls_z">
@@ -85,22 +86,98 @@
 		</button>
 	</section>
 
-	<section class="move-controls_rotate">
-		<button data-control="rotate-left" aria-labelledby="move-boombox rleft-label">
-			<span id="rleft-label">Rotate left</span>
-		</button>
-		<button data-control="rotate-down" aria-labelledby="move-boombox rdown-label">
-			<span id="rdown-label">Rotate downwards</span>
-		</button>
-		<button data-control="rotate-right" aria-labelledby="move-boombox rright-label">
-			<span id="-label">Rotate right</span>
-		</button>
-		<button data-control="rotate-up" aria-labelledby="move-boombox rup-label">
-			<span id="rup-label">Rotate upwards</span>
-		</button>
-	</section>
-
 </div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<div id="blog-post-demo">
+	<div :style="{fontSize : postFontSize + 'em'}">
+		<blog-post
+			v-for="post in posts"
+			v-bind:key="post.id"
+			v-bind:title="post.title"
+			v-on:enlarge-text="postFontSize += 0.1"
+		></blog-post>
+		<!--<value-reader id="test-value"></value-reader>-->
+		<value-displayer id="test-displayer"></value-displayer>
+	</div>
+</div>
+
+
+<script>
+
+	Vue.component('value-reader',{
+		data: function(){
+			return{
+				value: 0
+			}
+		},
+		methods: {
+			emitValue(){
+				this.$emit('valueChanged', this.value)
+			}
+		},
+		template : `
+		<div class="value-reader">
+			<input v-model="value" v-on:input="emitValue" placeholder="give a value"/>
+		</div>
+		`
+	})
+
+	Vue.component('value-displayer',{
+		data: function(){
+			return{
+				value: 0,
+				autre: 5
+			}
+		},
+		methods: {
+			changeValue(value){
+				this.value= value;
+			}
+		},
+		template : `
+		<div class="value-displayer">
+			<value-reader id= "test" @valueChanged="changeValue"></value-reader>
+			<h3>{{value}}</h3>
+		</div>
+		`
+	})
+
+	// Composant bouton compteur
+	Vue.component('button-counter', {
+		data: function () {
+			return {
+			count: 0
+			}
+		},
+		template: '<button v-on:click="count++">Vous m\'avez cliqué {{ count }} fois.</button>'
+	})
+
+	//Composant blog-post
+	Vue.component('blog-post', {
+		props: ['title'],
+		template: `
+			<div class="blog-post">
+				<h3>{{ title }}</h3>
+				<button v-on:click="$emit('enlarge-text')">
+  					Élargir le texte
+				</button>
+			</div>
+  		`
+	})
+
+//$new Vue({ el: '#components-demo' })
+new Vue({
+  el: '#blog-post-demo',
+  data: {
+    posts: [
+      { id: 1, title: 'Mon initiation avec Vue' },
+      { id: 2, title: 'Blogger avec Vue' },
+      { id: 3, title: 'Pourquoi Vue est tellement cool' }
+    ],
+	postFontSize:1 
+  }
+})
+</script>
 
 <script type="text/javascript">
 
