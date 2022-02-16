@@ -62,8 +62,9 @@
 <div id="position-controls" aria-labelledby="get-position-boombox">
 	<h3 id="get-position-boombox">Get Position</h3>
 	<section class="get-position_xy">
-		<input type="text" placeholder="premier input">
-		<input type="text" placeholder="deuxieme input">
+		<input type="text" placeholder="X" data-control="X">
+		<input type="text" placeholder="Y" data-control="Y">
+		<input type="text" placeholder="Z" data-control="Z">
 	</section>
 </div>
 
@@ -269,12 +270,12 @@ function init() {
 	listener = audioCtx.listener;
 
 	// Let's set the position of our listener based on where our boombox is.
-	const posX = window.innerWidth/2;
-	const posY = window.innerHeight/2;
+	const posX = 0;
+	const posY = 0;
 	const posZ = 0;
 
 	if(listener.positionX) {
-	  listener.positionX.value = posX;
+	  	listener.positionX.value = posX;
 		listener.positionY.value = posY;
 		listener.positionZ.value = posZ-5;
 	} else {
@@ -294,25 +295,25 @@ function init() {
 
 	const pannerModel = 'HRTF';
 
-	const innerCone = 40;
-	const outerCone = 50;
-	const outerGain = 0.4;
+	const innerCone = 360;
+	const outerCone = 0;
+	const outerGain = 0;
 
-	const distanceModel = 'linear';
+	const distanceModel = 'inverse';
 
-	const maxDistance = 20000;
+	const maxDistance = 10000; //default value
 
 	const refDistance = 1;
 
-	const rollOff = 10;
+	const rollOff = 1;
 
 	const positionX = posX;
 	const positionY = posY;
 	const positionZ = posZ;
 
-	const orientationX = 0.0;
-	const orientationY = 0.0;
-	const orientationZ = -1.0;
+	const orientationX = 1;
+	const orientationY = 0;
+	const orientationZ = 0;
 
 	// let's use the class method for creating our panner node and pass in all those parameters we've set.
 
@@ -338,10 +339,10 @@ function init() {
 	const boombox = document.querySelector('.boombox-body');
 
 	// set up our bounds
-	const topBound = -posY;
-	const bottomBound = posY;
-	const rightBound = posX;
-	const leftBound = -posX;
+	const topBound = window.innerHeight/2;;
+	const bottomBound = -window.innerHeight/2;;
+	const rightBound = window.innerWidth/2;
+	const leftBound = -window.innerWidth/2;
 	const forwardBound = 500;
   	const backwardBound = -500;
 
@@ -388,6 +389,36 @@ function init() {
 		return move;*/
 	}
 
+	function moveBoomboxAxis(axis, value){
+		if(!isNaN(value)){
+			switch(axis){
+				case 'X':
+					if (value <= rightBound && value >= leftBound){
+						panner.positionX.value = value;
+					} else{
+						panner.positionX.value = Math.abs(rightBound-value)>Math.abs(leftBound-value) ? leftBound:rightBound;
+					}
+				break;
+				case 'Y':
+					if (value <= topBound && value >= bottomBound){
+						panner.positionY.value = value;
+					} else{
+						panner.positionY.value = Math.abs(topBound-value)>Math.abs(bottomBound-value) ? bottomBound:topBound;
+					}
+				break;
+				case 'Z':
+					if (value <= forwardBound && value >= backwardBound){
+						panner.positionZ.value = value;
+					} else{
+						panner.positionZ.value = Math.abs(forwardBound-value)>Math.abs(backwardBound-value) ? backwardBound:forwardBound;
+					}
+				break;
+			}
+		}else{
+			console.log("Not a number on axis " + axis);
+		}
+	}
+
 
 	moveControls.forEach(function(el) {
 
@@ -402,7 +433,12 @@ function init() {
 
 	positionControls.forEach(function(el) {
 		el.addEventListener('input', function(){
-			console.log(el.value);
+			let axis = this.dataset.control;
+			
+			moveBoomboxAxis(axis, el.value);
+			console.log("X :" + panner.positionX.value + 
+			" Y :" + panner.positionY.value +
+			" Z :" + panner.positionZ.value);
 		})
 	})
 
