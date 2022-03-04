@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<div id="">
+<div id="qapp">
 
 	<div class="boombox-body">
 
@@ -63,9 +63,21 @@
 	<h3 id="get-position-boombox">Get Position</h3>
 	<section class="get-position_xy">
 		<input type="text" placeholder="X" data-control="X">
+		<p data-action="X"></p>
 		<input type="text" placeholder="Y" data-control="Y">
+		<p data-action="Y"></p>
 		<input type="text" placeholder="Z" data-control="Z">
+		<p data-action="Z"></p>
 	</section>
+</div>
+
+<div id="bounds-disp">
+	<p data-control="leftBound">left</p>
+	<p data-control="rightBound">right</p>
+	<p data-control="topBound"></p>
+	<p data-control="bottomBound"></p>
+	<p data-control="forwardBound"></p>
+	<p data-control="backwardBound"></p>
 </div>
 
 
@@ -103,19 +115,10 @@
 
 <div id="blog-post-demo">
 	<div :style="{fontSize : postFontSize + 'em'}">
-		<blog-post
-			v-for="post in posts"
-			v-bind:key="post.id"
-			v-bind:title="post.title"
-			v-on:enlarge-text="postFontSize += 0.1"
-		></blog-post>
-		<!--<value-reader id="test-value"></value-reader>-->
-		<value-displayer id="test-displayer"></value-displayer>
+		<!--<value-reader id="test-value"></value-reader>
+		<value-displayer id="test-displayer"></value-displayer>-->
 		<gps-button></gps-button>
 	</div>
-</div>
-
-<div id="position-getter">
 </div>
 
 
@@ -174,6 +177,7 @@
 		data: function () {
 			return {
 			location: null,
+			orientation : null,
 			gettingLocation: false,
 			errorStr: null
 			}
@@ -202,12 +206,20 @@
 					this.gettingLocation = false;
 					this.errorStr = e.message;
 				}
+			},
+			async getOrientation(){
+				window.addEventListener('deviceorientation', function(event) {
+					console.log("z : " + event.alpha + "\n x : " + event.beta + "\n y : " + event.gamma);
+					orientation = event.alpha;
+				});
 			}
 		},
 		template: `<div id="app" v-cloak>
 		<p>
 		Let us locate you for better results...
 		<button @click="locateMe">Get location</button>
+		<button @click="getOrientation">Get Orientation</button>
+
 		</p>
 
 		<div v-if="errorStr">
@@ -223,26 +235,15 @@
 		Your location data is {{ location.coords.latitude }}, {{ location.coords.longitude}}
 		</div>
 
+		<div v-if="orientation">
+		Your orientation data is {{ orientation }}
+		</div>
+
 		</div>`
 	})
-
-	//Composant blog-post
-	/*
-	Vue.component('blog-post', {
-		props: ['title'],
-		template: `
-			<div class="blog-post">
-				<h3>{{ title }}</h3>
-				<button v-on:click="$emit('enlarge-text')">
-  					Élargir le texte
-				</button>
-			</div>
-  		`
-	})*/
-
-//$new Vue({ el: '#components-demo' })
+	
 new Vue({
-  el: '#blog-post-demo',
+  el: '#blog-post-demo'/*,
   data: {
     posts: [
       { id: 1, title: 'Mon initiation avec Vue' },
@@ -250,7 +251,7 @@ new Vue({
       { id: 3, title: 'Pourquoi Vue est tellement cool' }
     ],
 	postFontSize:1 
-  }
+  }*/
 })
 </script>
 
@@ -336,47 +337,84 @@ function init() {
 
 	const moveControls = document.querySelector('#move-controls').querySelectorAll('button');
 	const positionControls = document.querySelector('#position-controls').querySelectorAll('input');
+	const positionDisplays = document.querySelector('#position-controls').querySelectorAll('p');
+	const boundsDisplays = document.querySelector('#bounds-disp').querySelectorAll('p');
 	const boombox = document.querySelector('.boombox-body');
 
 	// set up our bounds
-	const topBound = window.innerHeight/2;;
-	const bottomBound = -window.innerHeight/2;;
-	const rightBound = window.innerWidth/2;
-	const leftBound = -window.innerWidth/2;
-	const forwardBound = 500;
-  	const backwardBound = -500;
+	const bounds ={
+		topBound : window.innerHeight/2,
+		bottomBound : -window.innerHeight/2,
+		rightBound : window.innerWidth/2,
+		leftBound : -window.innerWidth/2,
+		forwardBound : 500,
+		backwardBound : -500
+	};
+	for (bound in bounds){
+		boundsDisplays.forEach(function(display){
+			//console.log(display.dataset.control + " HH " + bound);
+			if(display.dataset.control == bound){
+				display.textContent = bound+ " is "+bounds[bound];
+				//console.log(bounds.leftBound);
+			}
+		})
+	}
+
+	//Display initial positions
+	positionDisplays.forEach(function(element){
+		switch(element.dataset.action){
+			case 'X':
+				element.textContent = panner.positionX.value;
+			break;
+			case 'Y':
+				element.textContent = panner.positionY.value;
+			break;
+			case 'Z':
+				element.textContent = panner.positionZ.value;
+			break;
+		}
+	})
+
+	// Display Bounds
+	boundsDisplays.forEach(function(el){
+		for (bound in Object.keys(bounds)){
+			if(el.dataset.control === bound){
+				el.textContent = bounds[bound];
+			}
+		}
+	})
 
 
 	// function for setting the panner values and changing the styling
 	function moveBoombox(direction) {
 		switch (direction) {
 			case 'left':
-				if (panner.positionX.value> leftBound) {
+				if (panner.positionX.value> bounds.leftBound) {
 					panner.positionX.value -= 0.1;
 				}
 			break;
 			case 'up':
-				if (panner.positionY.value > topBound) {
+				if (panner.positionY.value > bounds.topBound) {
 					panner.positionY.value -= 0.3;
 				}
 			break;
 			case 'right':
-				if (panner.positionX.value < rightBound) {
+				if (panner.positionX.value < bounds.rightBound) {
 					panner.positionX.value += 0.1;
 				}
 			break;
 			case 'down':
-				if (panner.positionY.value < bottomBound) {
+				if (panner.positionY.value < bounds.bottomBound) {
 					panner.positionY.value += 0.3;
 				}
 			break;
 			case 'backward':
-				if (panner.positionZ.value > backwardBound) {
+				if (panner.positionZ.value > bounds.backwardBound) {
 					panner.positionZ.value -= 20;
 				}
 			break;
 			case 'forward':
-				if (panner.positionZ.value < forwardBound) {
+				if (panner.positionZ.value < bounds.forwardBound) {
 					panner.positionZ.value += 20;
 				}
 			break;
@@ -393,24 +431,24 @@ function init() {
 		if(!isNaN(value)){
 			switch(axis){
 				case 'X':
-					if (value <= rightBound && value >= leftBound){
+					if (value <= bounds.rightBound && value >= bounds.leftBound){
 						panner.positionX.value = value;
 					} else{
-						panner.positionX.value = Math.abs(rightBound-value)>Math.abs(leftBound-value) ? leftBound:rightBound;
+						panner.positionX.value = Math.abs(bounds.rightBound-value)>Math.abs(bounds.leftBound-value) ? bounds.leftBound:bounds.rightBound;
 					}
 				break;
 				case 'Y':
-					if (value <= topBound && value >= bottomBound){
+					if (value <= bounds.topBound && value >= bounds.bottomBound){
 						panner.positionY.value = value;
 					} else{
-						panner.positionY.value = Math.abs(topBound-value)>Math.abs(bottomBound-value) ? bottomBound:topBound;
+						panner.positionY.value = Math.abs(bounds.topBound-value)>Math.abs(bounds.bottomBound-value) ? bounds.bottomBound:bounds.topBound;
 					}
 				break;
 				case 'Z':
-					if (value <= forwardBound && value >= backwardBound){
+					if (value <= bounds.forwardBound && value >= bounds.backwardBound){
 						panner.positionZ.value = value;
 					} else{
-						panner.positionZ.value = Math.abs(forwardBound-value)>Math.abs(backwardBound-value) ? backwardBound:forwardBound;
+						panner.positionZ.value = Math.abs(bounds.forwardBound-value)>Math.abs(bounds.backwardBound-value) ? bounds.backwardBound:bounds.forwardBound;
 					}
 				break;
 			}
@@ -433,9 +471,15 @@ function init() {
 
 	positionControls.forEach(function(el) {
 		el.addEventListener('input', function(){
+
 			let axis = this.dataset.control;
 			
 			moveBoomboxAxis(axis, el.value);
+			positionDisplays.forEach(function(element){
+				if (axis === element.dataset.action){
+					element.textContent = el.value;
+				}
+			}) 
 			console.log("X :" + panner.positionX.value + 
 			" Y :" + panner.positionY.value +
 			" Z :" + panner.positionZ.value);
