@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<div id="">
+<div id="qapp">
 
 	<div class="boombox-body">
 
@@ -72,13 +72,12 @@
 </div>
 
 <div id="bounds-disp">
-	<p data-control="left-bound"></p>
-	<p data-control="left-bound"></p>
-	<p data-control="left-bound"></p>
-	<p data-control="left-bound"></p>
-	<p data-control="left-bound"></p>
-	<p data-control="left-bound"></p>
-	<p data-control="left-bound"></p>
+	<p data-control="leftBound">left</p>
+	<p data-control="rightBound">right</p>
+	<p data-control="topBound"></p>
+	<p data-control="bottomBound"></p>
+	<p data-control="forwardBound"></p>
+	<p data-control="backwardBound"></p>
 </div>
 
 
@@ -206,12 +205,19 @@
 					this.gettingLocation = false;
 					this.errorStr = e.message;
 				}
+			},
+			async getOrientation(){
+				window.addEventListener('deviceorientation', function(event) {
+					console.log("z : " + event.alpha + "\n x : " + event.beta + "\n y : " + event.gamma);
+				});
 			}
 		},
 		template: `<div id="app" v-cloak>
 		<p>
 		Let us locate you for better results...
 		<button @click="locateMe">Get location</button>
+		<button @click="getOrientation">Get Orientation</button>
+
 		</p>
 
 		<div v-if="errorStr">
@@ -229,24 +235,9 @@
 
 		</div>`
 	})
-
-	//Composant blog-post
-	/*
-	Vue.component('blog-post', {
-		props: ['title'],
-		template: `
-			<div class="blog-post">
-				<h3>{{ title }}</h3>
-				<button v-on:click="$emit('enlarge-text')">
-  					Élargir le texte
-				</button>
-			</div>
-  		`
-	})*/
-
-//$new Vue({ el: '#components-demo' })
+	
 new Vue({
-  el: '#blog-post-demo',
+  el: '#blog-post-demo'/*,
   data: {
     posts: [
       { id: 1, title: 'Mon initiation avec Vue' },
@@ -254,7 +245,7 @@ new Vue({
       { id: 3, title: 'Pourquoi Vue est tellement cool' }
     ],
 	postFontSize:1 
-  }
+  }*/
 })
 </script>
 
@@ -353,6 +344,15 @@ function init() {
 		forwardBound : 500,
 		backwardBound : -500
 	};
+	for (bound in bounds){
+		boundsDisplays.forEach(function(display){
+			//console.log(display.dataset.control + " HH " + bound);
+			if(display.dataset.control == bound){
+				display.textContent = bound+ " is "+bounds[bound];
+				//console.log(bounds.leftBound);
+			}
+		})
+	}
 
 	//Display initial positions
 	positionDisplays.forEach(function(element){
