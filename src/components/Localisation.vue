@@ -36,7 +36,7 @@ export default defineComponent({
       errorStr: null,
     };
   },
-  onMount: () => {
+  mounted: () => {
     console.log("huhuhuhu");
   },
   computed: {
@@ -81,7 +81,7 @@ export default defineComponent({
           );
           this.orientation = Math.random();
         });
-      }).bind(this);
+      });
     },
     async locateMe() {
       this.gettingLocation = true;
