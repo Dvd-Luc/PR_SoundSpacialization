@@ -207,7 +207,7 @@
 					window.addEventListener('deviceorientation', function(event) {
 						console.log("z : " + event.alpha + "\n x : " + event.beta + "\n y : " + event.gamma + "\n abs" + event.absolute);
 						resolve(event);
-					});
+					}, true);
 				})
 			},
 			async locateMe() {
