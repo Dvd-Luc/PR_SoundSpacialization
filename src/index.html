@@ -177,6 +177,7 @@
 		data: function () {
 			return {
 			location: null,
+			orientation : null,
 			gettingLocation: false,
 			errorStr: null
 			}
@@ -209,6 +210,7 @@
 			async getOrientation(){
 				window.addEventListener('deviceorientation', function(event) {
 					console.log("z : " + event.alpha + "\n x : " + event.beta + "\n y : " + event.gamma);
+					orientation = event.alpha;
 				});
 			}
 		},
@@ -231,6 +233,10 @@
 
 		<div v-if="location">
 		Your location data is {{ location.coords.latitude }}, {{ location.coords.longitude}}
+		</div>
+
+		<div v-if="orientation">
+		Your orientation data is {{ orientation }}
 		</div>
 
 		</div>`
