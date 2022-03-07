@@ -62,25 +62,23 @@ export default defineComponent({
       });
     },
     async getOrientation() {
-      return new Promise((resolve, reject) => {
-        if (!window.DeviceOrientationEvent) {
-          console.log("Orientation not available");
-          reject(new Error("Orientation not available on this device"));
-        }
+      if (!window.DeviceOrientationEvent) {
+        console.log("Orientation not available");
+        throw new Error("Orientation not available on this device");
+      }
 
-        window.addEventListener("deviceorientation", (event) => {
-          console.log(
-            "z : " +
-              event.alpha +
-              "\n x : " +
-              event.beta +
-              "\n y : " +
-              event.gamma +
-              "\n abs" +
-              event.absolute
-          );
-          this.orientation = Math.random();
-        });
+      window.addEventListener("deviceorientation", (event) => {
+        console.log(
+          "z : " +
+            event.alpha +
+            "\n x : " +
+            event.beta +
+            "\n y : " +
+            event.gamma +
+            "\n abs" +
+            event.absolute
+        );
+        this.orientation = Math.random();
       });
     },
     async locateMe() {
