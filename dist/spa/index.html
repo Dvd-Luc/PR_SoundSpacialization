@@ -1,0 +1,456 @@
+<!DOCTYPE html><html><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><title>Web Audio Spacialisation</title><meta name=description content="Panner node demo for Web Audio API"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><link rel=stylesheet type=text/css href=style.css><script defer src=js/vendor.8f172cab.js></script><script defer src=js/app.fefb2604.js></script><link href=css/vendor.b3e98c0e.css rel=stylesheet><link href=css/app.31d6cfe0.css rel=stylesheet></head><body><div id=q-app><div class=boombox-body><div class=bb-front><section class=master-controls><input type=range id=volume class=control-volume min=0 max=2 value=1 list=gain-vals step=0.01 data-action=volume><datalist id=gain-vals><option value=0 label=min></option><option value=2 label=max></option></datalist><label for=volume>VOL</label> <input type=range id=panner class=control-panner list=pan-vals min=-1 max=1 value=0 step=0.01 data-action=panner><datalist id=pan-vals><option value=-1 label=left></option><option value=1 label=right></option></datalist><label for=panner>Pan</label> <button class=control-power role=switch aria-checked=false data-power=on><span>On/Off</span></button></section><section class=tape><audio src=https://s3-us-west-2.amazonaws.com/s.cdpn.io/858/outfoxing.mp3 crossorigin=anonymous></audio><button data-playing=false class=tape-controls-play role=switch aria-checked=false><span>Play/Pause</span></button></section></div><div class=bb-top></div><div class=bb-right></div><div class=bb-bottom></div><div class=bb-left></div><div class=bb-back></div></div><div id="show position" aria-labelledby=move-boombox></div><div id=position-controls aria-labelledby=get-position-boombox><h3 id=get-position-boombox>Get Position</h3><section class=get-position_xy><input type=text placeholder=X data-control=X><p data-action=X></p><input type=text placeholder=Y data-control=Y><p data-action=Y></p><input type=text placeholder=Z data-control=Z><p data-action=Z></p></section></div><div id=bounds-disp><p data-control=leftBound>left</p><p data-control=rightBound>right</p><p data-control=topBound></p><p data-control=bottomBound></p><p data-control=forwardBound></p><p data-control=backwardBound></p></div><div id=move-controls aria-labelledby=move-boombox><h3 id=move-boombox>Move Boombox</h3><section class=move-controls_xy><button data-control=left aria-labelledby="move-boombox left-label"><span id=left-label>Left</span></button> <button data-control=up aria-labelledby="move-boombox up-label"><span id=up-label>Up</span></button> <button data-control=right aria-labelledby="move-boombox right-label"><span id=right-label>Right</span></button> <button data-control=down aria-labelledby="move-boombox down-label"><span id=down-label>Down</span></button><input_value></section><section class=move-controls_z><button data-control=backward aria-labelledby="move-boombox back-label"><span id=back-label>Back</span></button> <button data-control=forward aria-labelledby="move-boombox for-label"><span id=for-label>Forward</span></button></section></div><script src=https://cdn.jsdelivr.net/npm/vue/dist/vue.js></script><div id=blog-post-demo><div :style="{fontSize : postFontSize + 'em'}"><gps-button></gps-button></div></div></div><script>Vue.component('value-reader', {
+			data: function () {
+				return {
+					value: 0
+				}
+			},
+			methods: {
+				emitValue() {
+					this.$emit('valueChanged', this.value)
+				}
+			},
+			template: `
+		<div class="value-reader">
+			<input v-model="value" v-on:input="emitValue" placeholder="give a value"/>
+		</div>
+		`
+		})
+
+		Vue.component('value-displayer', {
+			data: function () {
+				return {
+					value: 0,
+					autre: 5
+				}
+			},
+			methods: {
+				changeValue(value) {
+					this.value = value;
+				}
+			},
+			template: `
+		<div class="value-displayer">
+			<value-reader id= "test" @valueChanged="changeValue"></value-reader>
+			<h3>{{value}}</h3>
+		</div>
+		`
+		})
+
+		// Composant bouton compteur
+		Vue.component('button-counter', {
+			data: function () {
+				return {
+					count: 0
+				}
+			},
+			template: '<button v-on:click="count++">Vous m\'avez cliqué {{ count }} fois.</button>'
+		})
+
+		// Bouton de lecture de géoloc
+		Vue.component('gps-button', {
+			data: function () {
+				return {
+					location: null,
+					orientation: null,
+					gettingLocation: false,
+					errorStr: null
+				}
+			},
+			computed: {
+				tagueule() {
+					return this.orientation
+				}
+			},
+			methods: {
+				async getLocation() {
+					return new Promise((resolve, reject) => {
+						if (!("geolocation" in navigator)) {
+							reject(new Error('Geolocation is not available.'));
+						}
+
+						navigator.geolocation.getCurrentPosition(pos => {
+							resolve(pos);
+						}, err => {
+							reject(err);
+						});
+
+					});
+				},
+				async getOrientation() {
+
+					return new Promise((resolve, reject) => {
+						if (!(window.DeviceOrientationEvent)) {
+							console.log("Orientation not available");
+							reject(new Error('Orientation not available on this device'));
+						}
+
+						window.addEventListener('deviceorientation', (event) => {
+							console.log("z : " + event.alpha + "\n x : " + event.beta + "\n y : " + event.gamma + "\n abs" + event.absolute);
+							this.orientation = Math.random()
+						});
+					}).bind(this)
+				},
+				async locateMe() {
+					this.gettingLocation = true;
+					try {
+						this.gettingLocation = false;
+						this.location = await this.getLocation();
+					} catch (e) {
+						this.gettingLocation = false;
+						this.errorStr = e.message;
+					}
+				},
+				async orientateMe() {
+					try {
+						this.orientation = await this.getOrientation();
+						console.log(this.orientation);
+					} catch (e) {
+						this.errorStr = e.message;
+					}
+					//orientateMe();
+				}
+				/*async getOrientation(){
+					window.addEventListener('deviceorientation', function(event) {
+						console.log("z : " + event.alpha + "\n x : " + event.beta + "\n y : " + event.gamma + "\n abs" + event.absolute);
+						this.orientation = 35;
+					});
+				}*/
+			},
+			template: `<div id="app" v-cloak>
+		<p>
+		Let us locate you for better results...
+		<button @click="locateMe">Get location</button>
+		<button @click="orientateMe">Get Orientation</button>
+
+		</p>
+
+		<div v-if="errorStr">
+		Sorry, but the following error
+		occurred: {{errorStr}}
+		</div>
+
+		<div v-if="gettingLocation">
+		<i>Getting your location...</i>
+		</div>
+
+		<div v-if="location">
+		Your location data is {{ location.coords.latitude }}, {{ location.coords.longitude}}
+		</div>
+
+		<div v-if="orientation">
+		Your orientation data is {{ tagueule }}
+		</div>
+
+		</div>`
+		})
+
+		new Vue({
+			el: '#blog-post-demo'/*,
+  data: {
+    posts: [
+      { id: 1, title: 'Mon initiation avec Vue' },
+      { id: 2, title: 'Blogger avec Vue' },
+      { id: 3, title: 'Pourquoi Vue est tellement cool' }
+    ],
+	postFontSize:1 
+  }*/
+		})</script><script>console.clear();
+		// instigate our audio context ~~~~~~~~~~~~~~~ 1
+
+		// for cross browser way
+		const AudioContext = window.AudioContext || window.webkitAudioContext;
+		let audioCtx;
+		let listener;
+
+		function init() {
+
+			audioCtx = new AudioContext();
+			listener = audioCtx.listener;
+
+			// Let's set the position of our listener based on where our boombox is.
+			const posX = 0;
+			const posY = 0;
+			const posZ = 0;
+
+			if (listener.positionX) {
+				listener.positionX.value = posX;
+				listener.positionY.value = posY;
+				listener.positionZ.value = posZ - 5;
+			} else {
+				listener.setPosition(posX, posY, posZ - 5);
+			}
+
+			if (listener.forwardX) {
+				listener.forwardX.value = 0;
+				listener.forwardY.value = 0;
+				listener.forwardZ.value = -1;
+				listener.upX.value = 0;
+				listener.upY.value = 1;
+				listener.upZ.value = 0;
+			} else {
+				listener.setOrientation(0, 0, -1, 0, 1, 0);
+			}
+
+			const pannerModel = 'HRTF';
+
+			const innerCone = 360;
+			const outerCone = 0;
+			const outerGain = 0;
+
+			const distanceModel = 'inverse';
+
+			const maxDistance = 10000; //default value
+
+			const refDistance = 1;
+
+			const rollOff = 1;
+
+			const positionX = posX;
+			const positionY = posY;
+			const positionZ = posZ;
+
+			const orientationX = 1;
+			const orientationY = 0;
+			const orientationZ = 0;
+
+			// let's use the class method for creating our panner node and pass in all those parameters we've set.
+
+			const panner = new PannerNode(audioCtx, {
+				panningModel: pannerModel,
+				distanceModel: distanceModel,
+				positionX: positionX,
+				positionY: positionY,
+				positionZ: positionZ,
+				orientationX: orientationX,
+				orientationY: orientationY,
+				orientationZ: orientationZ,
+				refDistance: refDistance,
+				maxDistance: maxDistance,
+				rolloffFactor: rollOff,
+				coneInnerAngle: innerCone,
+				coneOuterAngle: outerCone,
+				coneOuterGain: outerGain
+			})
+
+			const moveControls = document.querySelector('#move-controls').querySelectorAll('button');
+			const positionControls = document.querySelector('#position-controls').querySelectorAll('input');
+			const positionDisplays = document.querySelector('#position-controls').querySelectorAll('p');
+			const boundsDisplays = document.querySelector('#bounds-disp').querySelectorAll('p');
+			const boombox = document.querySelector('.boombox-body');
+
+			// set up our bounds
+			const bounds = {
+				topBound: window.innerHeight / 2,
+				bottomBound: -window.innerHeight / 2,
+				rightBound: window.innerWidth / 2,
+				leftBound: -window.innerWidth / 2,
+				forwardBound: 500,
+				backwardBound: -500
+			};
+			for (bound in bounds) {
+				boundsDisplays.forEach(function (display) {
+					//console.log(display.dataset.control + " HH " + bound);
+					if (display.dataset.control == bound) {
+						display.textContent = bound + " is " + bounds[bound];
+						//console.log(bounds.leftBound);
+					}
+				})
+			}
+
+			//Display initial positions
+			positionDisplays.forEach(function (element) {
+				switch (element.dataset.action) {
+					case 'X':
+						element.textContent = panner.positionX.value;
+						break;
+					case 'Y':
+						element.textContent = panner.positionY.value;
+						break;
+					case 'Z':
+						element.textContent = panner.positionZ.value;
+						break;
+				}
+			})
+
+			// Display Bounds
+			boundsDisplays.forEach(function (el) {
+				for (bound in Object.keys(bounds)) {
+					if (el.dataset.control === bound) {
+						el.textContent = bounds[bound];
+					}
+				}
+			})
+
+
+			// function for setting the panner values and changing the styling
+			function moveBoombox(direction) {
+				switch (direction) {
+					case 'left':
+						if (panner.positionX.value > bounds.leftBound) {
+							panner.positionX.value -= 0.1;
+						}
+						break;
+					case 'up':
+						if (panner.positionY.value > bounds.topBound) {
+							panner.positionY.value -= 0.3;
+						}
+						break;
+					case 'right':
+						if (panner.positionX.value < bounds.rightBound) {
+							panner.positionX.value += 0.1;
+						}
+						break;
+					case 'down':
+						if (panner.positionY.value < bounds.bottomBound) {
+							panner.positionY.value += 0.3;
+						}
+						break;
+					case 'backward':
+						if (panner.positionZ.value > bounds.backwardBound) {
+							panner.positionZ.value -= 20;
+						}
+						break;
+					case 'forward':
+						if (panner.positionZ.value < bounds.forwardBound) {
+							panner.positionZ.value += 20;
+						}
+						break;
+				}
+
+				/*boombox.style.transform = 'translateX('+transform.xAxis+'px) translateY('+transform.yAxis+'px) scale('+transform.zAxis+') rotateY('+transform.rotateY+'deg) rotateX('+transform.rotateX+'deg)';
+		  
+				const move = prevMove || {};
+				move.frameId = requestAnimationFrame(() => moveBoombox(direction, move));
+				  return move;*/
+			}
+
+			function moveBoomboxAxis(axis, value) {
+				if (!isNaN(value)) {
+					switch (axis) {
+						case 'X':
+							if (value <= bounds.rightBound && value >= bounds.leftBound) {
+								panner.positionX.value = value;
+							} else {
+								panner.positionX.value = Math.abs(bounds.rightBound - value) > Math.abs(bounds.leftBound - value) ? bounds.leftBound : bounds.rightBound;
+							}
+							break;
+						case 'Y':
+							if (value <= bounds.topBound && value >= bounds.bottomBound) {
+								panner.positionY.value = value;
+							} else {
+								panner.positionY.value = Math.abs(bounds.topBound - value) > Math.abs(bounds.bottomBound - value) ? bounds.bottomBound : bounds.topBound;
+							}
+							break;
+						case 'Z':
+							if (value <= bounds.forwardBound && value >= bounds.backwardBound) {
+								panner.positionZ.value = value;
+							} else {
+								panner.positionZ.value = Math.abs(bounds.forwardBound - value) > Math.abs(bounds.backwardBound - value) ? bounds.backwardBound : bounds.forwardBound;
+							}
+							break;
+					}
+				} else {
+					console.log("Not a number on axis " + axis);
+				}
+			}
+
+
+			moveControls.forEach(function (el) {
+
+				let moving;
+				el.addEventListener('mousedown', function () {
+
+					let direction = this.dataset.control;
+					moveBoombox(direction);
+					console.log(direction + "clicked ")
+				}, false);
+			})
+
+			positionControls.forEach(function (el) {
+				el.addEventListener('input', function () {
+
+					let axis = this.dataset.control;
+
+					moveBoomboxAxis(axis, el.value);
+					positionDisplays.forEach(function (element) {
+						if (axis === element.dataset.action) {
+							element.textContent = el.value;
+						}
+					})
+					console.log("X :" + panner.positionX.value +
+						" Y :" + panner.positionY.value +
+						" Z :" + panner.positionZ.value);
+				})
+			})
+
+			const track = audioCtx.createMediaElementSource(audioElement);
+
+			// if track ends - an event is fired once the track ends via the audio api. We can listen for this and set the correct params on the html element
+			audioElement.addEventListener('ended', () => {
+				playButton.dataset.playing = 'false';
+				playButton.setAttribute("aria-checked", "false");
+			}, false);
+
+			// volume ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 4
+			const gainNode = audioCtx.createGain();
+
+			const volumeControl = document.querySelector('[data-action="volume"]');
+			volumeControl.addEventListener('input', function () {
+				gainNode.gain.value = this.value;
+			}, false);
+
+			const pannerOptions = { pan: 0 };
+			const stereoPanner = new StereoPannerNode(audioCtx, pannerOptions);
+			const pannerControl = document.querySelector('[data-action="panner"]');
+			pannerControl.addEventListener('input', function () {
+				stereoPanner.pan.value = this.value;
+			}, false);
+
+			track.connect(gainNode).connect(stereoPanner).connect(panner).connect(audioCtx.destination);
+
+			const powerButton = document.querySelector('.control-power');
+
+			powerButton.addEventListener('click', function () {
+				if (this.dataset.power === 'on') {
+					audioCtx.suspend();
+					this.dataset.power = 'off';
+				} else if (this.dataset.power === 'off') {
+					audioCtx.resume();
+					this.dataset.power = 'on';
+				}
+				this.setAttribute("aria-checked", audioCtx.state ? "false" : "true");
+				console.log(audioCtx.state);
+			}, false);
+
+		}
+
+
+		// BOOMBOX FUNCTIONALITY HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2
+		const audioElement = document.querySelector('audio');
+
+		const playButton = document.querySelector('.tape-controls-play');
+
+		// play pause audio
+		playButton.addEventListener('click', function () {
+			if (!audioCtx) {
+				init();
+			}
+
+			// check if context is in suspended state (autoplay policy)
+			if (audioCtx.state === 'suspended') {
+				audioCtx.resume();
+			}
+
+			if (this.dataset.playing === 'false') {
+				audioElement.play();
+				this.dataset.playing = 'true';
+				// if track is playing pause it
+			} else if (this.dataset.playing === 'true') {
+				audioElement.pause();
+				this.dataset.playing = 'false';
+			}
+
+			let state = this.getAttribute('aria-checked') === "true" ? true : false;
+			this.setAttribute('aria-checked', state ? "false" : "true");
+
+		}, false);</script></body></html>
