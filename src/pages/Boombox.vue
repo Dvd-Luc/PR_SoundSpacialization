@@ -1,157 +1,162 @@
 <template>
-  <div class="boombox-body">
-    <div class="bb-front">
-      <section class="master-controls">
-        <input
-          type="range"
-          id="volume"
-          class="control-volume"
-          min="0"
-          max="2"
-          value="1"
-          list="gain-vals"
-          step="0.01"
-          data-action="volume"
-        />
-        <datalist id="gain-vals">
-          <option value="0" label="min"></option>
-          <option value="2" label="max"></option>
-        </datalist>
-        <label for="volume">VOL</label>
+  <q-page>
+    <div class="boombox-body">
+      <div class="bb-front">
+        <section class="master-controls">
+          <input
+            type="range"
+            id="volume"
+            class="control-volume"
+            min="0"
+            max="2"
+            value="1"
+            list="gain-vals"
+            step="0.01"
+            data-action="volume"
+          />
+          <datalist id="gain-vals">
+            <option value="0" label="min"></option>
+            <option value="2" label="max"></option>
+          </datalist>
+          <label for="volume">VOL</label>
 
-        <input
-          type="range"
-          id="panner"
-          class="control-panner"
-          list="pan-vals"
-          min="-1"
-          max="1"
-          value="0"
-          step="0.01"
-          data-action="panner"
-        />
-        <datalist id="pan-vals">
-          <option value="-1" label="left"></option>
-          <option value="1" label="right"></option>
-        </datalist>
-        <label for="panner">Pan</label>
+          <input
+            type="range"
+            id="panner"
+            class="control-panner"
+            list="pan-vals"
+            min="-1"
+            max="1"
+            value="0"
+            step="0.01"
+            data-action="panner"
+          />
+          <datalist id="pan-vals">
+            <option value="-1" label="left"></option>
+            <option value="1" label="right"></option>
+          </datalist>
+          <label for="panner">Pan</label>
 
-        <button
-          class="control-power"
-          role="switch"
-          aria-checked="false"
-          data-power="on"
-        >
-          <span>On/Off</span>
+          <button
+            class="control-power"
+            role="switch"
+            aria-checked="false"
+            data-power="on"
+          >
+            <span>On/Off</span>
+          </button>
+        </section>
+
+        <section class="tape">
+          <audio
+            ref="audioPlayer"
+            src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/858/outfoxing.mp3"
+            crossorigin="anonymous"
+          ></audio>
+
+          <q-btn @click="playMusic()" color="white" text-color="black">
+            <span>Play/Pause</span>
+          </q-btn>
+          <!-- <button data-playing="false" class="tape-controls-play" role="switch" aria-checked="false">
+					<span>Play/Pause</span>
+				</button> -->
+        </section>
+      </div>
+      <!--bb-front-->
+
+      <div class="bb-top"></div>
+      <div class="bb-right"></div>
+      <div class="bb-bottom"></div>
+      <div class="bb-left"></div>
+      <div class="bb-back"></div>
+    </div>
+    <!-- boombox-body -->
+
+    <div id="show position" aria-labelledby="move-boombox"></div>
+
+    <div id="position-controls" aria-labelledby="get-position-boombox">
+      <h3 id="get-position-boombox">Get Position</h3>
+      <section class="get-position_xy">
+        <div class="row q-col-gutter-sm">
+          <div class="column">
+            <q-input
+              standout
+              v-model="position.X"
+              @change="updatePanner"
+              label="X Position"
+            ></q-input>
+          </div>
+          <div class="column">
+            <q-input
+              standout
+              v-model="position.Y"
+              @change="updatePanner"
+              label="Y Position"
+            ></q-input>
+          </div>
+          <div class="column">
+            <q-input
+              standout
+              v-model="position.Z"
+              @change="updatePanner"
+              label="Z Position"
+            ></q-input>
+          </div>
+        </div>
+
+        <input type="text" placeholder="X" data-control="X" />
+        <p data-action="X"></p>
+        <input type="text" placeholder="Y" data-control="Y" />
+        <p data-action="Y"></p>
+        <input type="text" placeholder="Z" data-control="Z" />
+        <p data-action="Z"></p>
+      </section>
+    </div>
+
+    <div id="bounds-disp">
+      <p data-control="leftBound">left</p>
+      <p data-control="rightBound">right</p>
+      <p data-control="topBound"></p>
+      <p data-control="bottomBound"></p>
+      <p data-control="forwardBound"></p>
+      <p data-control="backwardBound"></p>
+    </div>
+
+    <div id="move-controls" aria-labelledby="move-boombox">
+      <h3 id="move-boombox">Move Boombox</h3>
+
+      <section class="move-controls_xy">
+        <button data-control="left" aria-labelledby="move-boombox left-label">
+          <span id="left-label">Left</span>
+        </button>
+        <button data-control="up" aria-labelledby="move-boombox up-label">
+          <span id="up-label">Up</span>
+        </button>
+        <button data-control="right" aria-labelledby="move-boombox right-label">
+          <span id="right-label">Right</span>
+        </button>
+        <button data-control="down" aria-labelledby="move-boombox down-label">
+          <span id="down-label">Down</span>
         </button>
       </section>
 
-      <section class="tape">
-        <audio
-          ref="audioPlayer"
-          src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/858/outfoxing.mp3"
-          crossorigin="anonymous"
-        ></audio>
-
-        <q-btn @click="playMusic()" color="white" text-color="black">
-          <span>Play/Pause</span>
-        </q-btn>
-        <!-- <button data-playing="false" class="tape-controls-play" role="switch" aria-checked="false">
-					<span>Play/Pause</span>
-				</button> -->
+      <section class="move-controls_z">
+        <button
+          data-control="backward"
+          aria-labelledby="move-boombox back-label"
+        >
+          <span id="back-label">Back</span>
+        </button>
+        <button data-control="forward" aria-labelledby="move-boombox for-label">
+          <span id="for-label">Forward</span>
+        </button>
       </section>
     </div>
-    <!--bb-front-->
 
-    <div class="bb-top"></div>
-    <div class="bb-right"></div>
-    <div class="bb-bottom"></div>
-    <div class="bb-left"></div>
-    <div class="bb-back"></div>
-  </div>
-  <!-- boombox-body -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
 
-  <div id="show position" aria-labelledby="move-boombox"></div>
-
-  <div id="position-controls" aria-labelledby="get-position-boombox">
-    <h3 id="get-position-boombox">Get Position</h3>
-    <section class="get-position_xy">
-      <div class="row q-col-gutter-sm">
-        <div class="column">
-          <q-input
-            standout
-            v-model="position.X"
-            @change="updatePanner"
-            label="X Position"
-          ></q-input>
-        </div>
-        <div class="column">
-          <q-input
-            standout
-            v-model="position.Y"
-            @change="updatePanner"
-            label="Y Position"
-          ></q-input>
-        </div>
-        <div class="column">
-          <q-input
-            standout
-            v-model="position.Z"
-            @change="updatePanner"
-            label="Z Position"
-          ></q-input>
-        </div>
-      </div>
-
-      <input type="text" placeholder="X" data-control="X" />
-      <p data-action="X"></p>
-      <input type="text" placeholder="Y" data-control="Y" />
-      <p data-action="Y"></p>
-      <input type="text" placeholder="Z" data-control="Z" />
-      <p data-action="Z"></p>
-    </section>
-  </div>
-
-  <div id="bounds-disp">
-    <p data-control="leftBound">left</p>
-    <p data-control="rightBound">right</p>
-    <p data-control="topBound"></p>
-    <p data-control="bottomBound"></p>
-    <p data-control="forwardBound"></p>
-    <p data-control="backwardBound"></p>
-  </div>
-
-  <div id="move-controls" aria-labelledby="move-boombox">
-    <h3 id="move-boombox">Move Boombox</h3>
-
-    <section class="move-controls_xy">
-      <button data-control="left" aria-labelledby="move-boombox left-label">
-        <span id="left-label">Left</span>
-      </button>
-      <button data-control="up" aria-labelledby="move-boombox up-label">
-        <span id="up-label">Up</span>
-      </button>
-      <button data-control="right" aria-labelledby="move-boombox right-label">
-        <span id="right-label">Right</span>
-      </button>
-      <button data-control="down" aria-labelledby="move-boombox down-label">
-        <span id="down-label">Down</span>
-      </button>
-    </section>
-
-    <section class="move-controls_z">
-      <button data-control="backward" aria-labelledby="move-boombox back-label">
-        <span id="back-label">Back</span>
-      </button>
-      <button data-control="forward" aria-labelledby="move-boombox for-label">
-        <span id="for-label">Forward</span>
-      </button>
-    </section>
-  </div>
-
-  <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
-
-  <Localisation />
+    <Localisation />
+  </q-page>
 </template>
 
 <script>
