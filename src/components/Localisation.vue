@@ -24,9 +24,9 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+//import { defineComponent } from "vue";
 
-export default defineComponent({
+export default {
   name: "Localisation",
   data: function () {
     return {
@@ -107,5 +107,5 @@ export default defineComponent({
             });
         }*/
   },
-});
+};
 </script>
