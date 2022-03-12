@@ -85,6 +85,11 @@
               @change="updatePanner('X', pannerSettings.positionX)"
               label="Source X Position"
             ></q-input>
+            <div>
+              Horizontal Bounds
+              <li>{{ bounds.leftBound }}</li>
+              <li>{{ bounds.rightBound }}</li>
+            </div>
           </div>
           <div class="column">
             <q-input
@@ -93,6 +98,11 @@
               @change="updatePanner('Y', pannerSettings.positionY)"
               label="Source Y Position"
             ></q-input>
+            <div>
+              Vertical Bounds
+              <li>{{ bounds.bottomBound }}</li>
+              <li>{{ bounds.topBound }}</li>
+            </div>
           </div>
           <div class="column">
             <q-input
@@ -101,6 +111,11 @@
               @change="updatePanner('Z', pannerSettings.positionZ)"
               label="Source Z Position"
             ></q-input>
+            <div>
+              Depth Bounds
+              <li>{{ bounds.backwardBound }}</li>
+              <li>{{ bounds.forwardBound }}</li>
+            </div>
           </div>
         </div>
 
@@ -168,6 +183,7 @@ export default {
     return {
       audioCtx: null,
       listener: null,
+      track: null,
       position: { X: 0, Y: 0, Z: 0 },
       pannerSettings: {
         pannerModel: "HRTF",
@@ -186,17 +202,31 @@ export default {
         orientationZ: 0,
       },
       panner: null,
+      bounds: {
+        topBound: window.innerHeight / 2,
+        bottomBound: -window.innerHeight / 2,
+        rightBound: window.innerWidth / 2,
+        leftBound: -window.innerWidth / 2,
+        forwardBound: 500,
+        backwardBound: -500,
+      },
     };
   },
   components: { Localisation },
   methods: {
     init() {
       console.log("init method");
-      this.listener.setPosition(
-        this.position.X,
-        this.position.Y,
-        this.position.Z - 5
-      );
+      if (this.listener.positionX) {
+        this.listener.positionX.value = this.position.X;
+        this.listener.positionY.value = this.position.Y;
+        this.listener.positionZ.value = this.position.Z - 12;
+      } else {
+        this.listener.setPosition(
+          this.position.X,
+          this.position.Y,
+          this.position.Z - 12
+        );
+      }
 
       this.listener.setOrientation(0, 0, -1, 0, 1, 0);
 
@@ -205,157 +235,122 @@ export default {
       this.panner = new PannerNode(this.audioCtx, this.pannerSettings);
       console.log(this.panner);
 
-      const moveControls = document
-        .querySelector("#move-controls")
-        .querySelectorAll("button");
-      const positionControls = document
-        .querySelector("#position-controls")
-        .querySelectorAll("input");
-      const positionDisplays = document
-        .querySelector("#position-controls")
-        .querySelectorAll("p");
-      const boundsDisplays = document
-        .querySelector("#bounds-disp")
-        .querySelectorAll("p");
-      const boombox = document.querySelector(".boombox-body");
+      // const moveControls = document
+      //   .querySelector("#move-controls")
+      //   .querySelectorAll("button");
+      // const positionControls = document
+      //   .querySelector("#position-controls")
+      //   .querySelectorAll("input");
+      // const positionDisplays = document
+      //   .querySelector("#position-controls")
+      //   .querySelectorAll("p");
+      // const boundsDisplays = document
+      //   .querySelector("#bounds-disp")
+      //   .querySelectorAll("p");
+      // const boombox = document.querySelector(".boombox-body");
 
-      // set up our bounds
-      const bounds = {
-        topBound: window.innerHeight / 2,
-        bottomBound: -window.innerHeight / 2,
-        rightBound: window.innerWidth / 2,
-        leftBound: -window.innerWidth / 2,
-        forwardBound: 500,
-        backwardBound: -500,
-      };
-      for (bound in bounds) {
-        boundsDisplays.forEach(function (display) {
-          //console.log(display.dataset.control + " HH " + bound);
-          if (display.dataset.control == bound) {
-            display.textContent = bound + " is " + bounds[bound];
-            //console.log(bounds.leftBound);
-          }
-        });
-      }
+      // // set up our bounds
+      // const bounds = {
+      //   topBound: window.innerHeight / 2,
+      //   bottomBound: -window.innerHeight / 2,
+      //   rightBound: window.innerWidth / 2,
+      //   leftBound: -window.innerWidth / 2,
+      //   forwardBound: 500,
+      //   backwardBound: -500,
+      // };
 
-      //Display initial positions
-      positionDisplays.forEach(function (element) {
-        switch (element.dataset.action) {
-          case "X":
-            element.textContent = panner.positionX.value;
-            break;
-          case "Y":
-            element.textContent = panner.positionY.value;
-            break;
-          case "Z":
-            element.textContent = panner.positionZ.value;
-            break;
-        }
-      });
+      // moveControls.forEach(function (el) {
+      //   let moving;
+      //   el.addEventListener(
+      //     "mousedown",
+      //     function () {
+      //       let direction = this.dataset.control;
+      //       moveBoombox(direction);
+      //       console.log(direction + "clicked ");
+      //     },
+      //     false
+      //   );
+      // });
 
-      // Display Bounds
-      boundsDisplays.forEach(function (el) {
-        for (bound in Object.keys(bounds)) {
-          if (el.dataset.control === bound) {
-            el.textContent = bounds[bound];
-          }
-        }
-      });
+      // positionControls.forEach(function (el) {
+      //   el.addEventListener("input", function () {
+      //     let axis = this.dataset.control;
 
-      // function for setting the panner values and changing the styling
+      //     moveBoomboxAxis(axis, el.value);
+      //     positionDisplays.forEach(function (element) {
+      //       if (axis === element.dataset.action) {
+      //         element.textContent = el.value;
+      //       }
+      //     });
+      //     console.log(
+      //       "X :" +
+      //         panner.positionX.value +
+      //         " Y :" +
+      //         panner.positionY.value +
+      //         " Z :" +
+      //         panner.positionZ.value
+      //     );
+      //   });
+      // });
 
-      moveControls.forEach(function (el) {
-        let moving;
-        el.addEventListener(
-          "mousedown",
-          function () {
-            let direction = this.dataset.control;
-            moveBoombox(direction);
-            console.log(direction + "clicked ");
-          },
-          false
-        );
-      });
+      // const track = this.audioCtx.createMediaElementSource(audioElement);
 
-      positionControls.forEach(function (el) {
-        el.addEventListener("input", function () {
-          let axis = this.dataset.control;
-
-          moveBoomboxAxis(axis, el.value);
-          positionDisplays.forEach(function (element) {
-            if (axis === element.dataset.action) {
-              element.textContent = el.value;
-            }
-          });
-          console.log(
-            "X :" +
-              panner.positionX.value +
-              " Y :" +
-              panner.positionY.value +
-              " Z :" +
-              panner.positionZ.value
-          );
-        });
-      });
-
-      const track = audioCtx.createMediaElementSource(audioElement);
-
-      // if track ends - an event is fired once the track ends via the audio api. We can listen for this and set the correct params on the html element
-      audioElement.addEventListener(
-        "ended",
-        () => {
-          playButton.dataset.playing = "false";
-          playButton.setAttribute("aria-checked", "false");
-        },
-        false
-      );
+      // // if track ends - an event is fired once the track ends via the audio api. We can listen for this and set the correct params on the html element
+      // audioElement.addEventListener(
+      //   "ended",
+      //   () => {
+      //     playButton.dataset.playing = "false";
+      //     playButton.setAttribute("aria-checked", "false");
+      //   },
+      //   false
+      // );
 
       // volume ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 4
-      const gainNode = audioCtx.createGain();
+      // const gainNode = this.audioCtx.createGain();
 
-      const volumeControl = document.querySelector('[data-action="volume"]');
-      volumeControl.addEventListener(
-        "input",
-        function () {
-          gainNode.gain.value = this.value;
-        },
-        false
-      );
+      // const volumeControl = document.querySelector('[data-action="volume"]');
+      // volumeControl.addEventListener(
+      //   "input",
+      //   function () {
+      //     gainNode.gain.value = this.value;
+      //   },
+      //   false
+      // );
 
-      const pannerOptions = { pan: 0 };
-      const stereoPanner = new StereoPannerNode(audioCtx, pannerOptions);
-      const pannerControl = document.querySelector('[data-action="panner"]');
-      pannerControl.addEventListener(
-        "input",
-        function () {
-          stereoPanner.pan.value = this.value;
-        },
-        false
-      );
+      // const pannerOptions = { pan: 0 };
+      // const stereoPanner = new StereoPannerNode(audioCtx, pannerOptions);
+      // const pannerControl = document.querySelector('[data-action="panner"]');
+      // pannerControl.addEventListener(
+      //   "input",
+      //   function () {
+      //     stereoPanner.pan.value = this.value;
+      //   },
+      //   false
+      // );
 
-      track
-        .connect(gainNode)
-        .connect(stereoPanner)
-        .connect(panner)
-        .connect(audioCtx.destination);
+      // track
+      //   .connect(gainNode)
+      //   .connect(stereoPanner)
+      //   .connect(panner)
+      //   .connect(audioCtx.destination);
 
-      const powerButton = document.querySelector(".control-power");
+      // const powerButton = document.querySelector(".control-power");
 
-      powerButton.addEventListener(
-        "click",
-        function () {
-          if (this.dataset.power === "on") {
-            audioCtx.suspend();
-            this.dataset.power = "off";
-          } else if (this.dataset.power === "off") {
-            audioCtx.resume();
-            this.dataset.power = "on";
-          }
-          this.setAttribute("aria-checked", audioCtx.state ? "false" : "true");
-          console.log(audioCtx.state);
-        },
-        false
-      );
+      // powerButton.addEventListener(
+      //   "click",
+      //   function () {
+      //     if (this.dataset.power === "on") {
+      //       audioCtx.suspend();
+      //       this.dataset.power = "off";
+      //     } else if (this.dataset.power === "off") {
+      //       audioCtx.resume();
+      //       this.dataset.power = "on";
+      //     }
+      //     this.setAttribute("aria-checked", audioCtx.state ? "false" : "true");
+      //     console.log(audioCtx.state);
+      //   },
+      //   false
+      // );
     },
     moveBoombox(direction) {
       switch (direction) {
@@ -439,23 +434,64 @@ export default {
       console.log(value);
       switch (axis) {
         case "X":
-          console.log(this.panner);
-          this.panner.positionX = value;
+          this.panner.positionX.value = value;
           break;
         case "Y":
-          this.panner.positionY = value;
+          this.panner.positionY.value = value;
           break;
         case "Z":
-          this.panner.positionZ = value;
+          this.panner.positionZ.value = value;
           break;
       }
+      console.log(this.panner);
+      console.log(this.listener);
     },
     async playMusic() {
+      // console.log(this.$refs.audioPlayer);
+      // console.log(this.audioCtx);
       if (!this.audioCtx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
+        console.log(this.listener);
         this.audioCtx = new AudioContext();
         this.listener = this.audioCtx.listener;
         this.init();
+        this.track = this.audioCtx.createMediaElementSource(
+          this.$refs.audioPlayer
+        );
+        console.log(this.track);
+
+        //volume ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 4
+        const gainNode = this.audioCtx.createGain();
+
+        const volumeControl = document.querySelector('[data-action="volume"]');
+        volumeControl.addEventListener(
+          "input",
+          function () {
+            gainNode.gain.value = this.value;
+          },
+          false
+        );
+
+        const pannerOptions = { pan: 0 };
+        const stereoPanner = new StereoPannerNode(this.audioCtx, pannerOptions);
+        const pannerControl = document.querySelector('[data-action="panner"]');
+        pannerControl.addEventListener(
+          "input",
+          function () {
+            stereoPanner.pan.value = this.value;
+          },
+          false
+        );
+
+        this.track
+          .connect(gainNode)
+          .connect(stereoPanner)
+          .connect(this.panner)
+          .connect(this.audioCtx.destination);
+
+        // this.listener = this.audioCtx.listener;
+
+        // this.init();
       }
       //console.log(this.audioCtx);
       //console.log(this.$refs.audioPlayer.paused);
