@@ -20,7 +20,7 @@
           </datalist>
           <label for="volume">VOL</label>
 
-          <input
+          <!-- <input
             type="range"
             id="panner"
             class="control-panner"
@@ -44,7 +44,7 @@
             data-power="on"
           >
             <span>On/Off</span>
-          </button>
+          </button> -->
         </section>
 
         <section class="tape">
@@ -53,6 +53,12 @@
             src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/858/outfoxing.mp3"
             crossorigin="anonymous"
           ></audio>
+          <!-- <q-slider
+            @change="updateGain()"
+            :min="0"
+            :max="2"
+            label="Vol"
+          ></q-slider> -->
 
           <q-btn @click="playMusic()" color="white" text-color="black">
             <span>Play/Pause</span>
@@ -119,28 +125,28 @@
           </div>
         </div>
 
-        <input type="text" placeholder="X" data-control="X" />
+        <!-- <input type="text" placeholder="X" data-control="X" />
         <p data-action="X"></p>
         <input type="text" placeholder="Y" data-control="Y" />
         <p data-action="Y"></p>
         <input type="text" placeholder="Z" data-control="Z" />
-        <p data-action="Z"></p>
+        <p data-action="Z"></p> -->
       </section>
     </div>
 
-    <div id="bounds-disp">
+    <!-- <div id="bounds-disp">
       <p data-control="leftBound">left</p>
       <p data-control="rightBound">right</p>
       <p data-control="topBound"></p>
       <p data-control="bottomBound"></p>
       <p data-control="forwardBound"></p>
       <p data-control="backwardBound"></p>
-    </div>
+    </div> -->
 
     <div id="move-controls" aria-labelledby="move-boombox">
       <h3 id="move-boombox">Move Boombox</h3>
 
-      <section class="move-controls_xy">
+      <!-- <section class="move-controls_xy">
         <button data-control="left" aria-labelledby="move-boombox left-label">
           <span id="left-label">Left</span>
         </button>
@@ -164,8 +170,26 @@
         </button>
         <button data-control="forward" aria-labelledby="move-boombox for-label">
           <span id="for-label">Forward</span>
-        </button>
-      </section>
+        </button> -->
+
+      <q-btn @click="moveBoombox('left')" color="white" text-color="black">
+        <span>Left</span>
+      </q-btn>
+      <q-btn @click="moveBoombox('right')" color="white" text-color="black">
+        <span>Right</span>
+      </q-btn>
+      <q-btn @click="moveBoombox('up')" color="white" text-color="black">
+        <span>Up</span>
+      </q-btn>
+      <q-btn @click="moveBoombox('down')" color="white" text-color="black">
+        <span>Down</span>
+      </q-btn>
+      <q-btn @click="moveBoombox('backward')" color="white" text-color="black">
+        <span>Backward</span>
+      </q-btn>
+      <q-btn @click="moveBoombox('forward')" color="white" text-color="black">
+        <span>Forward</span>
+      </q-btn>
     </div>
 
     <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
@@ -184,6 +208,7 @@ export default {
       audioCtx: null,
       listener: null,
       track: null,
+      gainNode: null,
       position: { X: 0, Y: 0, Z: 0 },
       pannerSettings: {
         pannerModel: "HRTF",
@@ -351,37 +376,63 @@ export default {
       //   },
       //   false
       // );
+      this.track = this.audioCtx.createMediaElementSource(
+        this.$refs.audioPlayer
+      );
+
+      this.gainNode = this.audioCtx.createGain();
+
+      const volumeControl = document.querySelector('[data-action="volume"]');
+      volumeControl.addEventListener(
+        "input",
+        function () {
+          this.gainNode.gain.value = this.value;
+        },
+        false
+      );
+
+      this.track
+        .connect(this.gainNode)
+        //.connect(stereoPanner)
+        .connect(this.panner)
+        .connect(this.audioCtx.destination);
     },
     moveBoombox(direction) {
+      const horizontalStep =
+        (this.bounds.rightBound - this.bounds.leftBound) / 50;
+      const verticalStep =
+        (this.bounds.topBound - this.bounds.bottomBound) / 50;
+      const depthStep =
+        (this.bounds.forwardBound - this.bounds.backwardBound) / 50;
       switch (direction) {
         case "left":
-          if (panner.positionX.value > bounds.leftBound) {
-            panner.positionX.value -= 0.1;
+          if (this.panner.positionX.value > this.bounds.leftBound) {
+            this.panner.positionX.value -= horizontalStep;
           }
           break;
         case "up":
-          if (panner.positionY.value > bounds.topBound) {
-            panner.positionY.value -= 0.3;
+          if (this.panner.positionY.value > this.bounds.topBound) {
+            this.panner.positionY.value += verticalStep;
           }
           break;
         case "right":
-          if (panner.positionX.value < bounds.rightBound) {
-            panner.positionX.value += 0.1;
+          if (this.panner.positionX.value < this.bounds.rightBound) {
+            this.panner.positionX.value += horizontalStep;
           }
           break;
         case "down":
-          if (panner.positionY.value < bounds.bottomBound) {
-            panner.positionY.value += 0.3;
+          if (this.panner.positionY.value < this.bounds.bottomBound) {
+            this.panner.positionY.value -= verticalStep;
           }
           break;
         case "backward":
-          if (panner.positionZ.value > bounds.backwardBound) {
-            panner.positionZ.value -= 20;
+          if (this.panner.positionZ.value > this.bounds.backwardBound) {
+            this.panner.positionZ.value -= depthStep;
           }
           break;
         case "forward":
-          if (panner.positionZ.value < bounds.forwardBound) {
-            panner.positionZ.value += 20;
+          if (this.panner.positionZ.value < this.bounds.forwardBound) {
+            this.panner.positionZ.value += depthStep;
           }
           break;
       }
@@ -455,39 +506,21 @@ export default {
         this.audioCtx = new AudioContext();
         this.listener = this.audioCtx.listener;
         this.init();
-        this.track = this.audioCtx.createMediaElementSource(
-          this.$refs.audioPlayer
-        );
-        console.log(this.track);
+
+        //console.log(this.track);
 
         //volume ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 4
-        const gainNode = this.audioCtx.createGain();
 
-        const volumeControl = document.querySelector('[data-action="volume"]');
-        volumeControl.addEventListener(
-          "input",
-          function () {
-            gainNode.gain.value = this.value;
-          },
-          false
-        );
-
-        const pannerOptions = { pan: 0 };
-        const stereoPanner = new StereoPannerNode(this.audioCtx, pannerOptions);
-        const pannerControl = document.querySelector('[data-action="panner"]');
-        pannerControl.addEventListener(
-          "input",
-          function () {
-            stereoPanner.pan.value = this.value;
-          },
-          false
-        );
-
-        this.track
-          .connect(gainNode)
-          .connect(stereoPanner)
-          .connect(this.panner)
-          .connect(this.audioCtx.destination);
+        // const pannerOptions = { pan: 0 };
+        // const stereoPanner = new StereoPannerNode(this.audioCtx, pannerOptions);
+        // const pannerControl = document.querySelector('[data-action="panner"]');
+        // pannerControl.addEventListener(
+        //   "input",
+        //   function () {
+        //     stereoPanner.pan.value = this.value;
+        //   },
+        //   false
+        // );
 
         // this.listener = this.audioCtx.listener;
 
