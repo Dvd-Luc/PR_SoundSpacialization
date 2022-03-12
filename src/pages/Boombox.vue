@@ -380,19 +380,19 @@ export default {
         this.$refs.audioPlayer
       );
 
-      this.gainNode = this.audioCtx.createGain();
+      const gainNode = this.audioCtx.createGain();
 
       const volumeControl = document.querySelector('[data-action="volume"]');
       volumeControl.addEventListener(
         "input",
         function () {
-          this.gainNode.gain.value = this.value;
+          gainNode.gain.value = this.value;
         },
         false
       );
 
       this.track
-        .connect(this.gainNode)
+        .connect(gainNode)
         //.connect(stereoPanner)
         .connect(this.panner)
         .connect(this.audioCtx.destination);
@@ -411,9 +411,10 @@ export default {
           }
           break;
         case "up":
-          if (this.panner.positionY.value > this.bounds.topBound) {
+          if (this.panner.positionY.value < this.bounds.topBound) {
             this.panner.positionY.value += verticalStep;
           }
+          console.log(this.panner.positionY.value);
           break;
         case "right":
           if (this.panner.positionX.value < this.bounds.rightBound) {
@@ -421,7 +422,7 @@ export default {
           }
           break;
         case "down":
-          if (this.panner.positionY.value < this.bounds.bottomBound) {
+          if (this.panner.positionY.value > this.bounds.bottomBound) {
             this.panner.positionY.value -= verticalStep;
           }
           break;
