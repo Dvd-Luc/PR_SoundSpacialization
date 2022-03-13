@@ -197,6 +197,19 @@
 
 				});
 			},
+			async getOrientation(){
+				return new Promise((resolve, reject) => {
+					if(!(window.DeviceOrientationEvent)) {
+						console.log("Orientation not available");
+						reject(new Error('Orientation not available on this device'));
+					}
+
+					window.addEventListener('deviceorientation', function(event) {
+						console.log("z : " + event.alpha + "\n x : " + event.beta + "\n y : " + event.gamma + "\n abs" + event.absolute);
+						resolve(event);
+					}, true);
+				})
+			},
 			async locateMe() {
 				this.gettingLocation = true;
 				try {
@@ -207,18 +220,26 @@
 					this.errorStr = e.message;
 				}
 			},
-			async getOrientation(){
-				window.addEventListener('deviceorientation', function(event) {
-					console.log("z : " + event.alpha + "\n x : " + event.beta + "\n y : " + event.gamma);
-					orientation = event.alpha;
-				});
+			async orientateMe() {
+				try{
+					this.orientation = await this.getOrientation();
+					console.log(this.orientation);
+				}catch(e){
+					this.errorStr = e.message;
+				}
 			}
+			/*async getOrientation(){
+				window.addEventListener('deviceorientation', function(event) {
+					console.log("z : " + event.alpha + "\n x : " + event.beta + "\n y : " + event.gamma + "\n abs" + event.absolute);
+					this.orientation = 35;
+				});
+			}*/
 		},
 		template: `<div id="app" v-cloak>
 		<p>
 		Let us locate you for better results...
 		<button @click="locateMe">Get location</button>
-		<button @click="getOrientation">Get Orientation</button>
+		<button @click="orientateMe">Get Orientation</button>
 
 		</p>
 
@@ -236,7 +257,7 @@
 		</div>
 
 		<div v-if="orientation">
-		Your orientation data is {{ orientation }}
+		Your orientation data is {{ orientation.alpha }}
 		</div>
 
 		</div>`
