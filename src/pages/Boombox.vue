@@ -254,6 +254,7 @@ export default {
       }
 
       this.listener.setOrientation(0, 0, -1, 0, 1, 0);
+      console.log(this.listener);
 
       // let's use the class method for creating our panner node and pass in all those parameters we've set.
 
@@ -399,11 +400,11 @@ export default {
     },
     moveBoombox(direction) {
       const horizontalStep =
-        (this.bounds.rightBound - this.bounds.leftBound) / 50;
+        (this.bounds.rightBound - this.bounds.leftBound) / 100;
       const verticalStep =
-        (this.bounds.topBound - this.bounds.bottomBound) / 50;
+        (this.bounds.topBound - this.bounds.bottomBound) / 100;
       const depthStep =
-        (this.bounds.forwardBound - this.bounds.backwardBound) / 50;
+        (this.bounds.forwardBound - this.bounds.backwardBound) / 100;
       switch (direction) {
         case "left":
           if (this.panner.positionX.value > this.bounds.leftBound) {
