@@ -125,6 +125,33 @@
           </div>
         </div>
 
+        <div id="move-listener" class="row q-col-gutter-sm">
+          <div class="column">
+            <q-input
+              standout
+              v-model="positionListener.X"
+              @change="updateListener('X', positionListener.X)"
+              label="Listener X Position"
+            ></q-input>
+          </div>
+          <div class="column">
+            <q-input
+              standout
+              v-model="positionListener.Y"
+              @change="updateListener('Y', positionListener.Y)"
+              label="Listener Y Position"
+            ></q-input>
+          </div>
+          <div class="column">
+            <q-input
+              standout
+              v-model="positionListener.Z"
+              @change="updateListener('Z', positionListener.Z)"
+              label="Listener Z Position"
+            ></q-input>
+          </div>
+        </div>
+
         <!-- <input type="text" placeholder="X" data-control="X" />
         <p data-action="X"></p>
         <input type="text" placeholder="Y" data-control="Y" />
@@ -209,6 +236,7 @@ export default {
       listener: null,
       track: null,
       gainNode: null,
+      positionListener: { X: 0, Y: 0, Z: 0 },
       position: { X: 0, Y: 0, Z: 0 },
       pannerSettings: {
         pannerModel: "HRTF",
@@ -219,7 +247,7 @@ export default {
         maxDistance: 10000,
         refDistance: 1,
         rollOff: 1,
-        positionX: 0, //this.position.X, Il faut faire un computed pour le reste?
+        positionX: 0, //this.position.X, Il faut faire un computed
         positionY: 0, //this.position.Y,
         positionZ: 0, //this.position.Z,
         orientationX: 1,
@@ -260,76 +288,6 @@ export default {
 
       this.panner = new PannerNode(this.audioCtx, this.pannerSettings);
       console.log(this.panner);
-
-      // const moveControls = document
-      //   .querySelector("#move-controls")
-      //   .querySelectorAll("button");
-      // const positionControls = document
-      //   .querySelector("#position-controls")
-      //   .querySelectorAll("input");
-      // const positionDisplays = document
-      //   .querySelector("#position-controls")
-      //   .querySelectorAll("p");
-      // const boundsDisplays = document
-      //   .querySelector("#bounds-disp")
-      //   .querySelectorAll("p");
-      // const boombox = document.querySelector(".boombox-body");
-
-      // // set up our bounds
-      // const bounds = {
-      //   topBound: window.innerHeight / 2,
-      //   bottomBound: -window.innerHeight / 2,
-      //   rightBound: window.innerWidth / 2,
-      //   leftBound: -window.innerWidth / 2,
-      //   forwardBound: 500,
-      //   backwardBound: -500,
-      // };
-
-      // moveControls.forEach(function (el) {
-      //   let moving;
-      //   el.addEventListener(
-      //     "mousedown",
-      //     function () {
-      //       let direction = this.dataset.control;
-      //       moveBoombox(direction);
-      //       console.log(direction + "clicked ");
-      //     },
-      //     false
-      //   );
-      // });
-
-      // positionControls.forEach(function (el) {
-      //   el.addEventListener("input", function () {
-      //     let axis = this.dataset.control;
-
-      //     moveBoomboxAxis(axis, el.value);
-      //     positionDisplays.forEach(function (element) {
-      //       if (axis === element.dataset.action) {
-      //         element.textContent = el.value;
-      //       }
-      //     });
-      //     console.log(
-      //       "X :" +
-      //         panner.positionX.value +
-      //         " Y :" +
-      //         panner.positionY.value +
-      //         " Z :" +
-      //         panner.positionZ.value
-      //     );
-      //   });
-      // });
-
-      // const track = this.audioCtx.createMediaElementSource(audioElement);
-
-      // // if track ends - an event is fired once the track ends via the audio api. We can listen for this and set the correct params on the html element
-      // audioElement.addEventListener(
-      //   "ended",
-      //   () => {
-      //     playButton.dataset.playing = "false";
-      //     playButton.setAttribute("aria-checked", "false");
-      //   },
-      //   false
-      // );
 
       // volume ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 4
       // const gainNode = this.audioCtx.createGain();
@@ -439,47 +397,47 @@ export default {
           break;
       }
     },
-    moveBoomboxAxis(axis, value) {
-      if (!isNaN(value)) {
-        switch (axis) {
-          case "X":
-            if (value <= bounds.rightBound && value >= bounds.leftBound) {
-              panner.positionX.value = value;
-            } else {
-              panner.positionX.value =
-                Math.abs(bounds.rightBound - value) >
-                Math.abs(bounds.leftBound - value)
-                  ? bounds.leftBound
-                  : bounds.rightBound;
-            }
-            break;
-          case "Y":
-            if (value <= bounds.topBound && value >= bounds.bottomBound) {
-              panner.positionY.value = value;
-            } else {
-              panner.positionY.value =
-                Math.abs(bounds.topBound - value) >
-                Math.abs(bounds.bottomBound - value)
-                  ? bounds.bottomBound
-                  : bounds.topBound;
-            }
-            break;
-          case "Z":
-            if (value <= bounds.forwardBound && value >= bounds.backwardBound) {
-              panner.positionZ.value = value;
-            } else {
-              panner.positionZ.value =
-                Math.abs(bounds.forwardBound - value) >
-                Math.abs(bounds.backwardBound - value)
-                  ? bounds.backwardBound
-                  : bounds.forwardBound;
-            }
-            break;
-        }
-      } else {
-        console.log("Not a number on axis " + axis);
-      }
-    },
+    // moveBoomboxAxis(axis, value) {
+    //   if (!isNaN(value)) {
+    //     switch (axis) {
+    //       case "X":
+    //         if (value <= bounds.rightBound && value >= bounds.leftBound) {
+    //           panner.positionX.value = value;
+    //         } else {
+    //           panner.positionX.value =
+    //             Math.abs(bounds.rightBound - value) >
+    //             Math.abs(bounds.leftBound - value)
+    //               ? bounds.leftBound
+    //               : bounds.rightBound;
+    //         }
+    //         break;
+    //       case "Y":
+    //         if (value <= bounds.topBound && value >= bounds.bottomBound) {
+    //           panner.positionY.value = value;
+    //         } else {
+    //           panner.positionY.value =
+    //             Math.abs(bounds.topBound - value) >
+    //             Math.abs(bounds.bottomBound - value)
+    //               ? bounds.bottomBound
+    //               : bounds.topBound;
+    //         }
+    //         break;
+    //       case "Z":
+    //         if (value <= bounds.forwardBound && value >= bounds.backwardBound) {
+    //           panner.positionZ.value = value;
+    //         } else {
+    //           panner.positionZ.value =
+    //             Math.abs(bounds.forwardBound - value) >
+    //             Math.abs(bounds.backwardBound - value)
+    //               ? bounds.backwardBound
+    //               : bounds.forwardBound;
+    //         }
+    //         break;
+    //     }
+    //   } else {
+    //     console.log("Not a number on axis " + axis);
+    //   }
+    // },
     updatePanner(axis, value) {
       console.log("updatePanner");
       console.log(this.position.X);
@@ -499,6 +457,24 @@ export default {
       console.log(this.panner);
       console.log(this.listener);
     },
+    updateListener(axis, value) {
+      console.log("updateListener");
+      console.log(axis);
+      console.log(value);
+      switch (axis) {
+        case "X":
+          this.listener.positionX.value = value;
+          break;
+        case "Y":
+          this.listener.positionY.value = value;
+          break;
+        case "Z":
+          this.listener.positionZ.value = value;
+          break;
+      }
+      console.log(this.panner);
+      console.log(this.listener);
+    },
     async playMusic() {
       // console.log(this.$refs.audioPlayer);
       // console.log(this.audioCtx);
@@ -508,25 +484,6 @@ export default {
         this.audioCtx = new AudioContext();
         this.listener = this.audioCtx.listener;
         this.init();
-
-        //console.log(this.track);
-
-        //volume ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 4
-
-        // const pannerOptions = { pan: 0 };
-        // const stereoPanner = new StereoPannerNode(this.audioCtx, pannerOptions);
-        // const pannerControl = document.querySelector('[data-action="panner"]');
-        // pannerControl.addEventListener(
-        //   "input",
-        //   function () {
-        //     stereoPanner.pan.value = this.value;
-        //   },
-        //   false
-        // );
-
-        // this.listener = this.audioCtx.listener;
-
-        // this.init();
       }
       //console.log(this.audioCtx);
       //console.log(this.$refs.audioPlayer.paused);
@@ -543,19 +500,18 @@ export default {
       if (this.audioCtx.state === "suspended") {
         this.audioCtx.resume();
       }
-
-      //   if (this.dataset.playing === "false") {
-      //     audioElement.play();
-      //     this.dataset.playing = "true";
-      //     // if track is playing pause it
-      //   } else if (this.dataset.playing === "true") {
-      //     audioElement.pause();
-      //     this.dataset.playing = "false";
-      //   }
-
-      //   let state = this.getAttribute("aria-checked") === "true" ? true : false;
-      //   this.setAttribute("aria-checked", state ? "false" : "true");
     },
+    rotateListener(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+
+      switch (direction) {
+        case "clockwise":
+          break;
+        case "anticlockwise":
+          break;
+      }
+    },
+    rotateSource() {},
   },
 };
 
