@@ -238,6 +238,15 @@ export default {
       gainNode: null,
       positionListener: { X: 0, Y: 0, Z: 0 },
       position: { X: 0, Y: 0, Z: 0 },
+      orientationListenerRad: {
+        forwardX: 0,
+        forwardY: 0,
+        forwardZ: 1,
+        upX: 0,
+        upY: 1,
+        upZ: 0,
+      },
+      orientationSourceRad: { X: 0, Y: 0, Z: -1 },
       pannerSettings: {
         pannerModel: "HRTF",
         innerCone: 360,
@@ -501,9 +510,8 @@ export default {
         this.audioCtx.resume();
       }
     },
-    rotateListener(direction) {
+    rotateListenerY(direction) {
       const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
-
       switch (direction) {
         case "clockwise":
           break;
@@ -511,7 +519,52 @@ export default {
           break;
       }
     },
-    rotateSource() {},
+    rotateSourceY(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      switch (direction) {
+        case "clockwise":
+          this.orientationSourceRad.Z =
+            this.orientationSourceRad.Z * Math.cos(rotationAngle) +
+            this.orientationSourceRad.X * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
+          this.orientationSourceRad.X =
+            this.orientationSourceRad.X * Math.cos(rotationAngle) -
+            this.orientationSourceRad.Z * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
+          break;
+        case "anticlockwise":
+          this.orientationSourceRad.Z =
+            this.orientationSourceRad.Z * Math.cos(rotationAngle) -
+            this.orientationSourceRad.X * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
+          this.orientationSourceRad.X =
+            this.orientationSourceRad.X * Math.cos(rotationAngle) +
+            this.orientationSourceRad.Z * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
+          break;
+      }
+      this.panner.orientationZ = this.orientationSourceRad.Z;
+      this.panner.orientationX = this.orientationSourceRad.X;
+    },
+    rotateSourceZ(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      switch (direction) {
+        case "clockwise":
+          this.orientationSourceRad.Z =
+            this.orientationSourceRad.Z * Math.cos(rotationAngle) +
+            this.orientationSourceRad.X * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
+          this.orientationSourceRad.X =
+            this.orientationSourceRad.X * Math.cos(rotationAngle) -
+            this.orientationSourceRad.Z * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
+          break;
+        case "anticlockwise":
+          this.orientationSourceRad.Z =
+            this.orientationSourceRad.Z * Math.cos(rotationAngle) -
+            this.orientationSourceRad.X * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
+          this.orientationSourceRad.X =
+            this.orientationSourceRad.X * Math.cos(rotationAngle) +
+            this.orientationSourceRad.Z * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
+          break;
+      }
+      this.panner.orientationZ = this.orientationSourceRad.Z;
+      this.panner.orientationX = this.orientationSourceRad.X;
+    },
   },
 };
 
