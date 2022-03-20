@@ -253,15 +253,20 @@
 
 <script>
 import Localisation from "src/components/Localisation";
+// import { Vector } from "src/lib/Vector";
+// import * as gpsMethods from "src/lib/gpsMethods";
 
 export default {
   name: "Boombox",
   data() {
     return {
+      localisationCtx: null,
       audioCtx: null,
       listener: null,
       track: null,
       gainNode: null,
+      gpsListenerLocation: null,
+      gpsSourceLocation: { latitude: 45.7703307, longitude: 4.880336 },
       positionListener: { X: 0, Y: 0, Z: 0 },
       position: { X: 0, Y: 0, Z: 0 },
       orientationListenerRad: {
@@ -302,8 +307,27 @@ export default {
   },
   components: { Localisation },
   methods: {
+    error() {
+      console.warn("ERROR(" + err.code + "): " + err.message);
+    },
     init() {
       console.log("init method");
+      //const vector = new Vector(1, 2, 3);
+      //console.log(cube(3));
+      //console.log(vector.x);
+      console.log(
+        this.getDistanceFromGPSinKm(
+          45.7703444,
+          4.8803131,
+          45.7703337,
+          4.8803657
+        )
+      );
+
+      // console.log(navigator.geolocation.getCurrentPosition());
+      //this.gpsListenerLocation = gpsMethods.locateMe();
+      console.log(this.gpsListenerLocation);
+      console.log(17627);
       if (this.listener.positionX) {
         this.listener.positionX.value = this.position.X;
         this.listener.positionY.value = this.position.Y;
@@ -390,6 +414,20 @@ export default {
         //.connect(stereoPanner)
         .connect(this.panner)
         .connect(this.audioCtx.destination);
+
+      if (!("geolocation" in navigator)) {
+        console.log("No Geolocation available");
+      } else {
+        const options = {
+          enableHighAccuracy: false,
+          timeout: 5000,
+        };
+        navigator.geolocation.watchPosition(
+          this.updateCartesianListenerPosition,
+          this.error,
+          options
+        );
+      }
     },
     moveBoombox(direction) {
       const horizontalStep =
@@ -536,7 +574,42 @@ export default {
         this.audioCtx.resume();
       }
     },
+    rotateListenerX(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const orientationY = this.orientationListenerRad.Y;
+      const orientationZ = this.orientationListenerRad.Z;
+      switch (direction) {
+        case "clockwise":
+          this.orientationListenerRad.Z =
+            orientationZ * Math.cos(rotationAngle) +
+            orientationY * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
+          this.orientationListenerRad.Y =
+            orientationY * Math.cos(rotationAngle) -
+            orientationZ * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
+          break;
+        case "anticlockwise":
+          this.orientationListenerRad.Z =
+            orientationZ * Math.cos(rotationAngle) -
+            orientationY * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
+          this.orientationListenerRad.Y =
+            orientationY * Math.cos(rotationAngle) +
+            orientationZ * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
+          break;
+      }
+      this.listener.orientationY.value = this.orientationListenerRad.Y;
+      this.listener.orientationZ.value = this.orientationListenerRad.Z;
+      console.log(this.orientationListenerRad);
+    },
     rotateListenerY(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      switch (direction) {
+        case "clockwise":
+          break;
+        case "anticlockwise":
+          break;
+      }
+    },
+    rotateListenerZ(direction) {
       const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
       switch (direction) {
         case "clockwise":
@@ -629,6 +702,88 @@ export default {
       this.panner.orientationY.value = this.orientationSourceRad.Y;
       this.panner.orientationX.value = this.orientationSourceRad.X;
       console.log(this.orientationSourceRad);
+    },
+    getDistanceFromGPSinKm(lat1, lon1, lat2, lon2) {
+      var R = 6371; // Radius of the earth in km
+      var dLat = this.deg2rad(lat2 - lat1); // deg2rad below
+      var dLon = this.deg2rad(lon2 - lon1);
+      var a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(this.deg2rad(lat1)) *
+          Math.cos(this.deg2rad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      var d = R * c; // Distance in km
+      return d;
+    },
+    deg2rad(deg) {
+      return deg * (Math.PI / 180);
+    },
+    async updateGPSListenerPosition() {
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            this.gpsListenerLocation = pos;
+            resolve(pos);
+          },
+          (err) => {
+            reject(err);
+          }
+        );
+      });
+      // navigator.geolocation.getCurrentPosition(
+      //   (pos) => {
+      //     this.gpsListenerLocation = pos;
+      //     //console.log(this.gpsListenerLocation.coords.latitude);
+      //   },
+      //   (err) => {
+      //     console.log(err);
+      //     new Error(err);
+      //   }
+      // );
+    },
+    async updateCartesianListenerPosition() {
+      var R = 6371; // Earth radius in km
+      await this.updateGPSListenerPosition();
+
+      var differenceGPS = {
+        latitude:
+          this.gpsSourceLocation.latitude -
+          this.gpsListenerLocation.coords.latitude,
+        longitude:
+          this.gpsSourceLocation.longitude -
+          this.gpsListenerLocation.coords.longitude,
+      };
+      var differenceCartesian = {
+        X:
+          R *
+          Math.cos(differenceGPS.latitude) *
+          Math.cos(differenceGPS.longitude),
+        Y:
+          R *
+          Math.cos(differenceGPS.latitude) *
+          Math.sin(differenceGPS.longitude),
+        Z: R * Math.sin(differenceGPS.latitude),
+      };
+
+      console.log(differenceCartesian);
+      this.positionListener.X = differenceCartesian.X;
+      this.updateListener("X", this.positionListener.X);
+      this.positionListener.Y = differenceCartesian.Y;
+      this.updateListener("Y", this.positionListener.Y);
+      this.positionListener.Z = differenceCartesian.Z;
+      this.updateListener("Z", this.positionListener.Z);
+
+      console.log("Source GPS : ");
+      console.log(this.gpsSourceLocation);
+      console.log("Listener GPS : ");
+      console.log(this.gpsListenerLocation);
+
+      console.log("Difference Cartesian");
+      console.log(differenceCartesian);
+      console.log("Position Listener");
+      console.log(this.positionListener);
     },
   },
 };
