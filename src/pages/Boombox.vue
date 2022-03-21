@@ -265,7 +265,7 @@ export default {
       listener: null,
       track: null,
       gainNode: null,
-      gpsListenerLocation: null,
+      gpsListenerLocation: { coords: null },
       gpsSourceLocation: { latitude: 45.7703307, longitude: 4.880336 },
       positionListener: { X: 0, Y: 0, Z: 0 },
       position: { X: 0, Y: 0, Z: 0 },
@@ -316,18 +316,13 @@ export default {
       //console.log(cube(3));
       //console.log(vector.x);
       console.log(
-        this.getDistanceFromGPSinKm(
-          45.7703444,
-          4.8803131,
-          45.7703337,
-          4.8803657
-        )
+        this.getDistanceFromGPSinKm(45.7703307, 4.880336, 45.7867264, 4.8726016)
       );
 
       // console.log(navigator.geolocation.getCurrentPosition());
       //this.gpsListenerLocation = gpsMethods.locateMe();
-      console.log(this.gpsListenerLocation);
-      console.log(17627);
+      // console.log(this.gpsListenerLocation);
+      // console.log(17627);
       if (this.listener.positionX) {
         this.listener.positionX.value = this.position.X;
         this.listener.positionY.value = this.position.Y;
@@ -545,8 +540,8 @@ export default {
           this.listener.positionZ.value = value;
           break;
       }
-      console.log(this.panner);
-      console.log(this.listener);
+      // console.log(this.panner);
+      // console.log(this.listener);
     },
     async playMusic() {
       // console.log(this.$refs.audioPlayer);
@@ -724,7 +719,19 @@ export default {
       return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            this.gpsListenerLocation = pos;
+            console.log("Pos : ");
+            console.log(pos);
+            var radPos = {
+              latitude: this.deg2rad(pos.coords.latitude),
+              longitude: this.deg2rad(pos.coords.longitude),
+            };
+            this.gpsListenerLocation.coords = radPos;
+            // this.gpsListenerLocation.coords.latitude = this.deg2rad(
+            //   this.gpsListenerLocation.coords.latitude
+            // );
+            // this.gpsListenerLocation.coords.longitude = this.deg2rad(
+            //   this.gpsListenerLocation.coords.longitude
+            // );
             resolve(pos);
           },
           (err) => {
@@ -755,18 +762,30 @@ export default {
           this.gpsSourceLocation.longitude -
           this.gpsListenerLocation.coords.longitude,
       };
+      // TODO passer des degres en radians dans une fonction pour la source --> le faire dans le q-input
       var differenceCartesian = {
         X:
           R *
-          Math.cos(differenceGPS.latitude) *
-          Math.cos(differenceGPS.longitude),
+          (Math.cos(this.deg2rad(this.gpsSourceLocation.latitude)) *
+            Math.cos(this.deg2rad(this.gpsSourceLocation.longitude)) -
+            Math.cos(this.gpsListenerLocation.coords.latitude) *
+              Math.cos(this.gpsListenerLocation.coords.longitude)),
         Y:
           R *
-          Math.cos(differenceGPS.latitude) *
-          Math.sin(differenceGPS.longitude),
-        Z: R * Math.sin(differenceGPS.latitude),
+          (Math.cos(this.deg2rad(this.gpsSourceLocation.latitude)) *
+            Math.sin(this.deg2rad(this.gpsSourceLocation.longitude)) -
+            Math.cos(this.gpsListenerLocation.coords.latitude) *
+              Math.sin(this.gpsListenerLocation.coords.longitude)),
+        Z:
+          R *
+          (Math.sin(this.deg2rad(this.gpsSourceLocation.latitude)) -
+            Math.sin(this.gpsListenerLocation.coords.latitude)),
       };
 
+      console.log("Difference GPS : ");
+      console.log(differenceGPS);
+
+      console.log("Difference Cartesian : ");
       console.log(differenceCartesian);
       this.positionListener.X = differenceCartesian.X;
       this.updateListener("X", this.positionListener.X);
