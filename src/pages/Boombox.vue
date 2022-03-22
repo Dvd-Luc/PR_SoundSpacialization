@@ -247,7 +247,7 @@
 
     <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
 
-    <Localisation />
+    <!-- <Localisation /> -->
   </q-page>
 </template>
 
@@ -305,7 +305,7 @@ export default {
       },
     };
   },
-  components: { Localisation },
+  // components: { Localisation },
   methods: {
     error() {
       console.warn("ERROR(" + err.code + "): " + err.message);
