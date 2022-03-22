@@ -1,8 +1,8 @@
 # PR_Spacialization (pr_spacialization)
 
 Web embedded app for soundfield immersion using HRTF, binaural and localisation technologies.
-## Manual spacialization : https://dvd-luc.github.io/PR_Spacialization/dist/spa/#/boombox
-## GPS spacialization : https://dvd-luc.github.io/PR_Spacialization/dist/spa/#/spacialization
+## Manual spacialization : [link](https://dvd-luc.github.io/PR_Spacialization/dist/spa/#/boombox)
+## GPS spacialization : [link](https://dvd-luc.github.io/PR_Spacialization/dist/spa/#/spacialization)
 ## Explanations
 This project aims to develop Audio Augmented Reality in embedded systems such as smartphones. To do so, it implements the use of HRTF using the WebAudio API. 
 ### Current features :
