@@ -91,11 +91,11 @@
               @change="updatePanner('X', pannerSettings.positionX)"
               label="Source X Position"
             ></q-input>
-            <div>
+            <!-- <div>
               Horizontal Bounds
               <li>{{ bounds.leftBound }}</li>
               <li>{{ bounds.rightBound }}</li>
-            </div>
+            </div> -->
           </div>
           <div class="column">
             <q-input
@@ -104,11 +104,11 @@
               @change="updatePanner('Y', pannerSettings.positionY)"
               label="Source Y Position"
             ></q-input>
-            <div>
+            <!-- <div>
               Vertical Bounds
               <li>{{ bounds.bottomBound }}</li>
               <li>{{ bounds.topBound }}</li>
-            </div>
+            </div> -->
           </div>
           <div class="column">
             <q-input
@@ -117,79 +117,132 @@
               @change="updatePanner('Z', pannerSettings.positionZ)"
               label="Source Z Position"
             ></q-input>
-            <div>
+            <!-- <div>
               Depth Bounds
               <li>{{ bounds.backwardBound }}</li>
               <li>{{ bounds.forwardBound }}</li>
-            </div>
+            </div> -->
           </div>
         </div>
 
-        <!-- <input type="text" placeholder="X" data-control="X" />
-        <p data-action="X"></p>
-        <input type="text" placeholder="Y" data-control="Y" />
-        <p data-action="Y"></p>
-        <input type="text" placeholder="Z" data-control="Z" />
-        <p data-action="Z"></p> -->
+        <div id="move-listener" class="row q-col-gutter-sm">
+          <div class="column">
+            <q-input
+              standout
+              v-model="positionListener.X"
+              @change="updateListener('X', positionListener.X)"
+              label="Listener X Position"
+            ></q-input>
+          </div>
+          <div class="column">
+            <q-input
+              standout
+              v-model="positionListener.Y"
+              @change="updateListener('Y', positionListener.Y)"
+              label="Listener Y Position"
+            ></q-input>
+          </div>
+          <div class="column">
+            <q-input
+              standout
+              v-model="positionListener.Z"
+              @change="updateListener('Z', positionListener.Z)"
+              label="Listener Z Position"
+            ></q-input>
+          </div>
+        </div>
       </section>
     </div>
-
-    <!-- <div id="bounds-disp">
-      <p data-control="leftBound">left</p>
-      <p data-control="rightBound">right</p>
-      <p data-control="topBound"></p>
-      <p data-control="bottomBound"></p>
-      <p data-control="forwardBound"></p>
-      <p data-control="backwardBound"></p>
-    </div> -->
-
     <div id="move-controls" aria-labelledby="move-boombox">
       <h3 id="move-boombox">Move Boombox</h3>
+      <div class="row q-col-gutter-sm">
+        <div class="column">
+          <q-btn @click="moveBoombox('left')" color="white" text-color="black">
+            <span>Left</span>
+          </q-btn>
+          <q-btn @click="moveBoombox('right')" color="white" text-color="black">
+            <span>Right</span>
+          </q-btn>
+        </div>
+        <div class="column">
+          <q-btn @click="moveBoombox('up')" color="white" text-color="black">
+            <span>Up</span>
+          </q-btn>
+          <q-btn @click="moveBoombox('down')" color="white" text-color="black">
+            <span>Down</span>
+          </q-btn>
+        </div>
+        <div class="column">
+          <q-btn
+            @click="moveBoombox('backward')"
+            color="white"
+            text-color="black"
+          >
+            <span>Backward</span>
+          </q-btn>
+          <q-btn
+            @click="moveBoombox('forward')"
+            color="white"
+            text-color="black"
+          >
+            <span>Forward</span>
+          </q-btn>
+        </div>
+      </div>
+    </div>
 
-      <!-- <section class="move-controls_xy">
-        <button data-control="left" aria-labelledby="move-boombox left-label">
-          <span id="left-label">Left</span>
-        </button>
-        <button data-control="up" aria-labelledby="move-boombox up-label">
-          <span id="up-label">Up</span>
-        </button>
-        <button data-control="right" aria-labelledby="move-boombox right-label">
-          <span id="right-label">Right</span>
-        </button>
-        <button data-control="down" aria-labelledby="move-boombox down-label">
-          <span id="down-label">Down</span>
-        </button>
-      </section>
-
-      <section class="move-controls_z">
-        <button
-          data-control="backward"
-          aria-labelledby="move-boombox back-label"
-        >
-          <span id="back-label">Back</span>
-        </button>
-        <button data-control="forward" aria-labelledby="move-boombox for-label">
-          <span id="for-label">Forward</span>
-        </button> -->
-
-      <q-btn @click="moveBoombox('left')" color="white" text-color="black">
-        <span>Left</span>
-      </q-btn>
-      <q-btn @click="moveBoombox('right')" color="white" text-color="black">
-        <span>Right</span>
-      </q-btn>
-      <q-btn @click="moveBoombox('up')" color="white" text-color="black">
-        <span>Up</span>
-      </q-btn>
-      <q-btn @click="moveBoombox('down')" color="white" text-color="black">
-        <span>Down</span>
-      </q-btn>
-      <q-btn @click="moveBoombox('backward')" color="white" text-color="black">
-        <span>Backward</span>
-      </q-btn>
-      <q-btn @click="moveBoombox('forward')" color="white" text-color="black">
-        <span>Forward</span>
-      </q-btn>
+    <div id="rotate-source">
+      <h3>Rotate Source</h3>
+      <div class="row q-col-gutter-sm">
+        <div class="column">
+          <q-btn
+            @click="rotateSourceX('clockwise')"
+            color="white"
+            text-color="black"
+          >
+            <span>Clockwise X</span>
+          </q-btn>
+          <q-btn
+            @click="rotateSourceX('anticlockwise')"
+            color="white"
+            text-color="black"
+          >
+            <span>Anticlockwise X</span>
+          </q-btn>
+        </div>
+        <div class="column">
+          <q-btn
+            @click="rotateSourceY('clockwise')"
+            color="white"
+            text-color="black"
+          >
+            <span>Clockwise Y</span>
+          </q-btn>
+          <q-btn
+            @click="rotateSourceY('anticlockwise')"
+            color="white"
+            text-color="black"
+          >
+            <span>Anticlockwise Y</span>
+          </q-btn>
+        </div>
+        <div class="column">
+          <q-btn
+            @click="rotateSourceZ('clockwise')"
+            color="white"
+            text-color="black"
+          >
+            <span>Clockwise Z</span>
+          </q-btn>
+          <q-btn
+            @click="rotateSourceX('anticlockwise')"
+            color="white"
+            text-color="black"
+          >
+            <span>Anticlockwise Z</span>
+          </q-btn>
+        </div>
+      </div>
     </div>
 
     <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
@@ -200,16 +253,31 @@
 
 <script>
 import Localisation from "src/components/Localisation";
+// import { Vector } from "src/lib/Vector";
+// import * as gpsMethods from "src/lib/gpsMethods";
 
 export default {
   name: "Boombox",
   data() {
     return {
+      localisationCtx: null,
       audioCtx: null,
       listener: null,
       track: null,
       gainNode: null,
+      gpsListenerLocation: { coords: null },
+      gpsSourceLocation: { latitude: 45.7703307, longitude: 4.880336 },
+      positionListener: { X: 0, Y: 0, Z: 0 },
       position: { X: 0, Y: 0, Z: 0 },
+      orientationListenerRad: {
+        forwardX: 0,
+        forwardY: 0,
+        forwardZ: 1,
+        upX: 0,
+        upY: 1,
+        upZ: 0,
+      },
+      orientationSourceRad: { X: 0, Y: 0, Z: -1 },
       pannerSettings: {
         pannerModel: "HRTF",
         innerCone: 360,
@@ -219,12 +287,12 @@ export default {
         maxDistance: 10000,
         refDistance: 1,
         rollOff: 1,
-        positionX: 0, //this.position.X, Il faut faire un computed pour le reste?
+        positionX: 0, //this.position.X, Il faut faire un computed
         positionY: 0, //this.position.Y,
         positionZ: 0, //this.position.Z,
-        orientationX: 1,
+        orientationX: 0,
         orientationY: 0,
-        orientationZ: 0,
+        orientationZ: 1,
       },
       panner: null,
       bounds: {
@@ -239,8 +307,22 @@ export default {
   },
   components: { Localisation },
   methods: {
+    error() {
+      console.warn("ERROR(" + err.code + "): " + err.message);
+    },
     init() {
       console.log("init method");
+      //const vector = new Vector(1, 2, 3);
+      //console.log(cube(3));
+      //console.log(vector.x);
+      console.log(
+        this.getDistanceFromGPSinKm(45.7703307, 4.880336, 45.7867264, 4.8726016)
+      );
+
+      // console.log(navigator.geolocation.getCurrentPosition());
+      //this.gpsListenerLocation = gpsMethods.locateMe();
+      // console.log(this.gpsListenerLocation);
+      // console.log(17627);
       if (this.listener.positionX) {
         this.listener.positionX.value = this.position.X;
         this.listener.positionY.value = this.position.Y;
@@ -260,76 +342,6 @@ export default {
 
       this.panner = new PannerNode(this.audioCtx, this.pannerSettings);
       console.log(this.panner);
-
-      // const moveControls = document
-      //   .querySelector("#move-controls")
-      //   .querySelectorAll("button");
-      // const positionControls = document
-      //   .querySelector("#position-controls")
-      //   .querySelectorAll("input");
-      // const positionDisplays = document
-      //   .querySelector("#position-controls")
-      //   .querySelectorAll("p");
-      // const boundsDisplays = document
-      //   .querySelector("#bounds-disp")
-      //   .querySelectorAll("p");
-      // const boombox = document.querySelector(".boombox-body");
-
-      // // set up our bounds
-      // const bounds = {
-      //   topBound: window.innerHeight / 2,
-      //   bottomBound: -window.innerHeight / 2,
-      //   rightBound: window.innerWidth / 2,
-      //   leftBound: -window.innerWidth / 2,
-      //   forwardBound: 500,
-      //   backwardBound: -500,
-      // };
-
-      // moveControls.forEach(function (el) {
-      //   let moving;
-      //   el.addEventListener(
-      //     "mousedown",
-      //     function () {
-      //       let direction = this.dataset.control;
-      //       moveBoombox(direction);
-      //       console.log(direction + "clicked ");
-      //     },
-      //     false
-      //   );
-      // });
-
-      // positionControls.forEach(function (el) {
-      //   el.addEventListener("input", function () {
-      //     let axis = this.dataset.control;
-
-      //     moveBoomboxAxis(axis, el.value);
-      //     positionDisplays.forEach(function (element) {
-      //       if (axis === element.dataset.action) {
-      //         element.textContent = el.value;
-      //       }
-      //     });
-      //     console.log(
-      //       "X :" +
-      //         panner.positionX.value +
-      //         " Y :" +
-      //         panner.positionY.value +
-      //         " Z :" +
-      //         panner.positionZ.value
-      //     );
-      //   });
-      // });
-
-      // const track = this.audioCtx.createMediaElementSource(audioElement);
-
-      // // if track ends - an event is fired once the track ends via the audio api. We can listen for this and set the correct params on the html element
-      // audioElement.addEventListener(
-      //   "ended",
-      //   () => {
-      //     playButton.dataset.playing = "false";
-      //     playButton.setAttribute("aria-checked", "false");
-      //   },
-      //   false
-      // );
 
       // volume ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 4
       // const gainNode = this.audioCtx.createGain();
@@ -397,6 +409,20 @@ export default {
         //.connect(stereoPanner)
         .connect(this.panner)
         .connect(this.audioCtx.destination);
+
+      // if (!("geolocation" in navigator)) {
+      //   console.log("No Geolocation available");
+      // } else {
+      //   const options = {
+      //     enableHighAccuracy: false,
+      //     timeout: 5000,
+      //   };
+      //   navigator.geolocation.watchPosition(
+      //     this.updateCartesianListenerPosition,
+      //     this.error,
+      //     options
+      //   );
+      // }
     },
     moveBoombox(direction) {
       const horizontalStep =
@@ -439,47 +465,47 @@ export default {
           break;
       }
     },
-    moveBoomboxAxis(axis, value) {
-      if (!isNaN(value)) {
-        switch (axis) {
-          case "X":
-            if (value <= bounds.rightBound && value >= bounds.leftBound) {
-              panner.positionX.value = value;
-            } else {
-              panner.positionX.value =
-                Math.abs(bounds.rightBound - value) >
-                Math.abs(bounds.leftBound - value)
-                  ? bounds.leftBound
-                  : bounds.rightBound;
-            }
-            break;
-          case "Y":
-            if (value <= bounds.topBound && value >= bounds.bottomBound) {
-              panner.positionY.value = value;
-            } else {
-              panner.positionY.value =
-                Math.abs(bounds.topBound - value) >
-                Math.abs(bounds.bottomBound - value)
-                  ? bounds.bottomBound
-                  : bounds.topBound;
-            }
-            break;
-          case "Z":
-            if (value <= bounds.forwardBound && value >= bounds.backwardBound) {
-              panner.positionZ.value = value;
-            } else {
-              panner.positionZ.value =
-                Math.abs(bounds.forwardBound - value) >
-                Math.abs(bounds.backwardBound - value)
-                  ? bounds.backwardBound
-                  : bounds.forwardBound;
-            }
-            break;
-        }
-      } else {
-        console.log("Not a number on axis " + axis);
-      }
-    },
+    // moveBoomboxAxis(axis, value) {
+    //   if (!isNaN(value)) {
+    //     switch (axis) {
+    //       case "X":
+    //         if (value <= bounds.rightBound && value >= bounds.leftBound) {
+    //           panner.positionX.value = value;
+    //         } else {
+    //           panner.positionX.value =
+    //             Math.abs(bounds.rightBound - value) >
+    //             Math.abs(bounds.leftBound - value)
+    //               ? bounds.leftBound
+    //               : bounds.rightBound;
+    //         }
+    //         break;
+    //       case "Y":
+    //         if (value <= bounds.topBound && value >= bounds.bottomBound) {
+    //           panner.positionY.value = value;
+    //         } else {
+    //           panner.positionY.value =
+    //             Math.abs(bounds.topBound - value) >
+    //             Math.abs(bounds.bottomBound - value)
+    //               ? bounds.bottomBound
+    //               : bounds.topBound;
+    //         }
+    //         break;
+    //       case "Z":
+    //         if (value <= bounds.forwardBound && value >= bounds.backwardBound) {
+    //           panner.positionZ.value = value;
+    //         } else {
+    //           panner.positionZ.value =
+    //             Math.abs(bounds.forwardBound - value) >
+    //             Math.abs(bounds.backwardBound - value)
+    //               ? bounds.backwardBound
+    //               : bounds.forwardBound;
+    //         }
+    //         break;
+    //     }
+    //   } else {
+    //     console.log("Not a number on axis " + axis);
+    //   }
+    // },
     updatePanner(axis, value) {
       console.log("updatePanner");
       console.log(this.position.X);
@@ -499,6 +525,24 @@ export default {
       console.log(this.panner);
       console.log(this.listener);
     },
+    updateListener(axis, value) {
+      console.log("updateListener");
+      console.log(axis);
+      console.log(value);
+      switch (axis) {
+        case "X":
+          this.listener.positionX.value = value;
+          break;
+        case "Y":
+          this.listener.positionY.value = value;
+          break;
+        case "Z":
+          this.listener.positionZ.value = value;
+          break;
+      }
+      // console.log(this.panner);
+      // console.log(this.listener);
+    },
     async playMusic() {
       // console.log(this.$refs.audioPlayer);
       // console.log(this.audioCtx);
@@ -508,25 +552,6 @@ export default {
         this.audioCtx = new AudioContext();
         this.listener = this.audioCtx.listener;
         this.init();
-
-        //console.log(this.track);
-
-        //volume ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 4
-
-        // const pannerOptions = { pan: 0 };
-        // const stereoPanner = new StereoPannerNode(this.audioCtx, pannerOptions);
-        // const pannerControl = document.querySelector('[data-action="panner"]');
-        // pannerControl.addEventListener(
-        //   "input",
-        //   function () {
-        //     stereoPanner.pan.value = this.value;
-        //   },
-        //   false
-        // );
-
-        // this.listener = this.audioCtx.listener;
-
-        // this.init();
       }
       //console.log(this.audioCtx);
       //console.log(this.$refs.audioPlayer.paused);
@@ -543,18 +568,241 @@ export default {
       if (this.audioCtx.state === "suspended") {
         this.audioCtx.resume();
       }
+    },
+    rotateListenerX(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const orientationY = this.orientationListenerRad.Y;
+      const orientationZ = this.orientationListenerRad.Z;
+      switch (direction) {
+        case "clockwise":
+          this.orientationListenerRad.Z =
+            orientationZ * Math.cos(rotationAngle) +
+            orientationY * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
+          this.orientationListenerRad.Y =
+            orientationY * Math.cos(rotationAngle) -
+            orientationZ * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
+          break;
+        case "anticlockwise":
+          this.orientationListenerRad.Z =
+            orientationZ * Math.cos(rotationAngle) -
+            orientationY * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
+          this.orientationListenerRad.Y =
+            orientationY * Math.cos(rotationAngle) +
+            orientationZ * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
+          break;
+      }
+      this.listener.orientationY.value = this.orientationListenerRad.Y;
+      this.listener.orientationZ.value = this.orientationListenerRad.Z;
+      console.log(this.orientationListenerRad);
+    },
+    rotateListenerY(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      switch (direction) {
+        case "clockwise":
+          break;
+        case "anticlockwise":
+          break;
+      }
+    },
+    rotateListenerZ(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      switch (direction) {
+        case "clockwise":
+          break;
+        case "anticlockwise":
+          break;
+      }
+    },
 
-      //   if (this.dataset.playing === "false") {
-      //     audioElement.play();
-      //     this.dataset.playing = "true";
-      //     // if track is playing pause it
-      //   } else if (this.dataset.playing === "true") {
-      //     audioElement.pause();
-      //     this.dataset.playing = "false";
+    // clockwise from Y to Z
+    rotateSourceX(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const orientationY = this.orientationSourceRad.Y;
+      const orientationZ = this.orientationSourceRad.Z;
+      switch (direction) {
+        case "clockwise":
+          this.orientationSourceRad.Z =
+            orientationZ * Math.cos(rotationAngle) +
+            orientationY * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
+          this.orientationSourceRad.Y =
+            orientationY * Math.cos(rotationAngle) -
+            orientationZ * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
+          break;
+        case "anticlockwise":
+          this.orientationSourceRad.Z =
+            orientationZ * Math.cos(rotationAngle) -
+            orientationY * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
+          this.orientationSourceRad.Y =
+            orientationY * Math.cos(rotationAngle) +
+            orientationZ * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
+          break;
+      }
+      this.panner.orientationY.value = this.orientationSourceRad.Y;
+      this.panner.orientationZ.value = this.orientationSourceRad.Z;
+      console.log(this.orientationSourceRad);
+    },
+    // clockwise from Z to X
+    rotateSourceY(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const orientationX = this.orientationSourceRad.X;
+      const orientationZ = this.orientationSourceRad.Z;
+      switch (direction) {
+        case "clockwise":
+          this.orientationSourceRad.X =
+            orientationX * Math.cos(rotationAngle) +
+            orientationZ * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
+          this.orientationSourceRad.Z =
+            orientationZ * Math.cos(rotationAngle) -
+            orientationX * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
+          break;
+        case "anticlockwise":
+          this.orientationSourceRad.X =
+            orientationX * Math.cos(rotationAngle) -
+            orientationZ * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
+          this.orientationSourceRad.Z =
+            orientationZ * Math.cos(rotationAngle) +
+            orientationX * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
+          break;
+      }
+      this.panner.orientationZ.value = this.orientationSourceRad.Z;
+      this.panner.orientationX.value = this.orientationSourceRad.X;
+      console.log(this.orientationSourceRad);
+    },
+
+    // clockwise from X to Y
+    //
+    rotateSourceZ(direction) {
+      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const orientationX = this.orientationSourceRad.X;
+      const orientationY = this.orientationSourceRad.Y;
+      switch (direction) {
+        case "clockwise":
+          console.log("Spin Right");
+          this.orientationSourceRad.Y =
+            orientationY * Math.cos(rotationAngle) +
+            orientationX * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
+          this.orientationSourceRad.X =
+            orientationX * Math.cos(rotationAngle) -
+            orientationY * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
+          break;
+        case "anticlockwise":
+          this.orientationSourceRad.Y =
+            orientationY * Math.cos(rotationAngle) -
+            orientationX * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
+          this.orientationSourceRad.X =
+            orientationX * Math.cos(rotationAngle) +
+            orientationY * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
+          break;
+      }
+      this.panner.orientationY.value = this.orientationSourceRad.Y;
+      this.panner.orientationX.value = this.orientationSourceRad.X;
+      console.log(this.orientationSourceRad);
+    },
+    getDistanceFromGPSinKm(lat1, lon1, lat2, lon2) {
+      var R = 6371; // Radius of the earth in km
+      var dLat = this.deg2rad(lat2 - lat1); // deg2rad below
+      var dLon = this.deg2rad(lon2 - lon1);
+      var a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(this.deg2rad(lat1)) *
+          Math.cos(this.deg2rad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      var d = R * c; // Distance in km
+      return d;
+    },
+    deg2rad(deg) {
+      return deg * (Math.PI / 180);
+    },
+    async updateGPSListenerPosition() {
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            console.log("Pos : ");
+            console.log(pos);
+            var radPos = {
+              latitude: this.deg2rad(pos.coords.latitude),
+              longitude: this.deg2rad(pos.coords.longitude),
+            };
+            this.gpsListenerLocation.coords = radPos;
+            // this.gpsListenerLocation.coords.latitude = this.deg2rad(
+            //   this.gpsListenerLocation.coords.latitude
+            // );
+            // this.gpsListenerLocation.coords.longitude = this.deg2rad(
+            //   this.gpsListenerLocation.coords.longitude
+            // );
+            resolve(pos);
+          },
+          (err) => {
+            reject(err);
+          }
+        );
+      });
+      // navigator.geolocation.getCurrentPosition(
+      //   (pos) => {
+      //     this.gpsListenerLocation = pos;
+      //     //console.log(this.gpsListenerLocation.coords.latitude);
+      //   },
+      //   (err) => {
+      //     console.log(err);
+      //     new Error(err);
       //   }
+      // );
+    },
+    async updateCartesianListenerPosition() {
+      var R = 6371; // Earth radius in km
+      await this.updateGPSListenerPosition();
 
-      //   let state = this.getAttribute("aria-checked") === "true" ? true : false;
-      //   this.setAttribute("aria-checked", state ? "false" : "true");
+      var differenceGPS = {
+        latitude:
+          this.gpsSourceLocation.latitude -
+          this.gpsListenerLocation.coords.latitude,
+        longitude:
+          this.gpsSourceLocation.longitude -
+          this.gpsListenerLocation.coords.longitude,
+      };
+      // TODO passer des degres en radians dans une fonction pour la source --> le faire dans le q-input
+      var differenceCartesian = {
+        X:
+          R *
+          (Math.cos(this.deg2rad(this.gpsSourceLocation.latitude)) *
+            Math.cos(this.deg2rad(this.gpsSourceLocation.longitude)) -
+            Math.cos(this.gpsListenerLocation.coords.latitude) *
+              Math.cos(this.gpsListenerLocation.coords.longitude)),
+        Y:
+          R *
+          (Math.cos(this.deg2rad(this.gpsSourceLocation.latitude)) *
+            Math.sin(this.deg2rad(this.gpsSourceLocation.longitude)) -
+            Math.cos(this.gpsListenerLocation.coords.latitude) *
+              Math.sin(this.gpsListenerLocation.coords.longitude)),
+        Z:
+          R *
+          (Math.sin(this.deg2rad(this.gpsSourceLocation.latitude)) -
+            Math.sin(this.gpsListenerLocation.coords.latitude)),
+      };
+
+      console.log("Difference GPS : ");
+      console.log(differenceGPS);
+
+      console.log("Difference Cartesian : ");
+      console.log(differenceCartesian);
+      this.positionListener.X = differenceCartesian.X;
+      this.updateListener("X", this.positionListener.X);
+      this.positionListener.Y = differenceCartesian.Y;
+      this.updateListener("Y", this.positionListener.Y);
+      this.positionListener.Z = differenceCartesian.Z;
+      this.updateListener("Z", this.positionListener.Z);
+
+      console.log("Source GPS : ");
+      console.log(this.gpsSourceLocation);
+      console.log("Listener GPS : ");
+      console.log(this.gpsListenerLocation);
+
+      console.log("Difference Cartesian");
+      console.log(differenceCartesian);
+      console.log("Position Listener");
+      console.log(this.positionListener);
     },
   },
 };
