@@ -3,7 +3,7 @@
     <p>
       Let us locate you for better results...
       <button @click="locateMe">Get location</button>
-      <button @click="orientateMe">Get Orientation</button>
+      <!-- <button @click="orientateMe">Get Orientation</button> -->
     </p>
 
     <div v-if="errorStr">
@@ -19,7 +19,7 @@
       {{ location.coords.longitude }}
     </div>
 
-    <div v-if="orientation">Your orientation data is {{ dispOrientation }}</div>
+    <!-- <div v-if="orientation">Your orientation data is {{ dispOrientation }}</div> -->
   </div>
 </template>
 

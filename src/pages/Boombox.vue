@@ -91,11 +91,11 @@
               @change="updatePanner('X', pannerSettings.positionX)"
               label="Source X Position"
             ></q-input>
-            <div>
+            <!-- <div>
               Horizontal Bounds
               <li>{{ bounds.leftBound }}</li>
               <li>{{ bounds.rightBound }}</li>
-            </div>
+            </div> -->
           </div>
           <div class="column">
             <q-input
@@ -104,11 +104,11 @@
               @change="updatePanner('Y', pannerSettings.positionY)"
               label="Source Y Position"
             ></q-input>
-            <div>
+            <!-- <div>
               Vertical Bounds
               <li>{{ bounds.bottomBound }}</li>
               <li>{{ bounds.topBound }}</li>
-            </div>
+            </div> -->
           </div>
           <div class="column">
             <q-input
@@ -117,11 +117,11 @@
               @change="updatePanner('Z', pannerSettings.positionZ)"
               label="Source Z Position"
             ></q-input>
-            <div>
+            <!-- <div>
               Depth Bounds
               <li>{{ bounds.backwardBound }}</li>
               <li>{{ bounds.forwardBound }}</li>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -410,19 +410,19 @@ export default {
         .connect(this.panner)
         .connect(this.audioCtx.destination);
 
-      if (!("geolocation" in navigator)) {
-        console.log("No Geolocation available");
-      } else {
-        const options = {
-          enableHighAccuracy: false,
-          timeout: 5000,
-        };
-        navigator.geolocation.watchPosition(
-          this.updateCartesianListenerPosition,
-          this.error,
-          options
-        );
-      }
+      // if (!("geolocation" in navigator)) {
+      //   console.log("No Geolocation available");
+      // } else {
+      //   const options = {
+      //     enableHighAccuracy: false,
+      //     timeout: 5000,
+      //   };
+      //   navigator.geolocation.watchPosition(
+      //     this.updateCartesianListenerPosition,
+      //     this.error,
+      //     options
+      //   );
+      // }
     },
     moveBoombox(direction) {
       const horizontalStep =

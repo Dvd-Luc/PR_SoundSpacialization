@@ -80,14 +80,15 @@
         <div class="column">
           <q-input
             standout
-            v-model="gpsSourceLocation.latitude"
+            v-model="gpsSourceLocation.deg.latitude"
+            @change="updateSourceLocationRad()"
             label="Source latitude"
           ></q-input>
         </div>
         <div class="column">
           <q-input
             standout
-            v-model="gpsSourceLocation.longitude"
+            v-model="gpsSourceLocation.deg.longitude"
             label="Source longitude"
           ></q-input>
         </div>
@@ -106,7 +107,7 @@ import Localisation from "src/components/Localisation";
 // import * as gpsMethods from "src/lib/gpsMethods";
 
 export default {
-  name: "Boombox",
+  name: "Spacialization",
   data() {
     return {
       localisationCtx: null,
@@ -114,8 +115,11 @@ export default {
       listener: null,
       track: null,
       gainNode: null,
-      gpsListenerLocation: null,
-      gpsSourceLocation: { latitude: 45.7703307, longitude: 4.880336 },
+      gpsListenerLocation: { deg: null, rad: null },
+      gpsSourceLocation: {
+        deg: { latitude: 0, longitude: 0 }, // 45.7703307 4.880336
+        rad: { latitude: 0, longitude: 0 },
+      },
       positionListener: { X: 0, Y: 0, Z: 0 },
       position: { X: 0, Y: 0, Z: 0 },
       orientationListenerRad: {
@@ -148,7 +152,7 @@ export default {
   },
   components: { Localisation },
   methods: {
-    error() {
+    error(err) {
       console.warn("ERROR(" + err.code + "): " + err.message);
     },
     init() {
@@ -177,15 +181,16 @@ export default {
       if (!("geolocation" in navigator)) {
         console.log("No Geolocation available");
       } else {
-        const options = {
-          enableHighAccuracy: false,
-          timeout: 5000,
-        };
-        navigator.geolocation.watchPosition(
-          this.updateCartesianListenerPosition,
-          this.error,
-          options
-        );
+        this.updateCartesianListenerPosition();
+        // const options = {
+        //   enableHighAccuracy: false,
+        //   timeout: 5000,
+        // };
+        // navigator.geolocation.watchPosition(
+        //   this.updateCartesianListenerPosition(),
+        //   this.error,
+        //   options
+        // );
       }
       console.log(this.listener);
 
@@ -261,107 +266,14 @@ export default {
         .connect(this.panner)
         .connect(this.audioCtx.destination);
     },
-    // moveBoombox(direction) {
-    //   const horizontalStep =
-    //     (this.bounds.rightBound - this.bounds.leftBound) / 100;
-    //   const verticalStep =
-    //     (this.bounds.topBound - this.bounds.bottomBound) / 100;
-    //   const depthStep =
-    //     (this.bounds.forwardBound - this.bounds.backwardBound) / 100;
-    //   switch (direction) {
-    //     case "left":
-    //       if (this.panner.positionX.value > this.bounds.leftBound) {
-    //         this.panner.positionX.value -= horizontalStep;
-    //       }
-    //       break;
-    //     case "up":
-    //       if (this.panner.positionY.value < this.bounds.topBound) {
-    //         this.panner.positionY.value += verticalStep;
-    //       }
-    //       console.log(this.panner.positionY.value);
-    //       break;
-    //     case "right":
-    //       if (this.panner.positionX.value < this.bounds.rightBound) {
-    //         this.panner.positionX.value += horizontalStep;
-    //       }
-    //       break;
-    //     case "down":
-    //       if (this.panner.positionY.value > this.bounds.bottomBound) {
-    //         this.panner.positionY.value -= verticalStep;
-    //       }
-    //       break;
-    //     case "backward":
-    //       if (this.panner.positionZ.value > this.bounds.backwardBound) {
-    //         this.panner.positionZ.value -= depthStep;
-    //       }
-    //       break;
-    //     case "forward":
-    //       if (this.panner.positionZ.value < this.bounds.forwardBound) {
-    //         this.panner.positionZ.value += depthStep;
-    //       }
-    //       break;
-    //   }
-    // },
-    // moveBoomboxAxis(axis, value) {
-    //   if (!isNaN(value)) {
-    //     switch (axis) {
-    //       case "X":
-    //         if (value <= bounds.rightBound && value >= bounds.leftBound) {
-    //           panner.positionX.value = value;
-    //         } else {
-    //           panner.positionX.value =
-    //             Math.abs(bounds.rightBound - value) >
-    //             Math.abs(bounds.leftBound - value)
-    //               ? bounds.leftBound
-    //               : bounds.rightBound;
-    //         }
-    //         break;
-    //       case "Y":
-    //         if (value <= bounds.topBound && value >= bounds.bottomBound) {
-    //           panner.positionY.value = value;
-    //         } else {
-    //           panner.positionY.value =
-    //             Math.abs(bounds.topBound - value) >
-    //             Math.abs(bounds.bottomBound - value)
-    //               ? bounds.bottomBound
-    //               : bounds.topBound;
-    //         }
-    //         break;
-    //       case "Z":
-    //         if (value <= bounds.forwardBound && value >= bounds.backwardBound) {
-    //           panner.positionZ.value = value;
-    //         } else {
-    //           panner.positionZ.value =
-    //             Math.abs(bounds.forwardBound - value) >
-    //             Math.abs(bounds.backwardBound - value)
-    //               ? bounds.backwardBound
-    //               : bounds.forwardBound;
-    //         }
-    //         break;
-    //     }
-    //   } else {
-    //     console.log("Not a number on axis " + axis);
-    //   }
-    // },
-    // updatePanner(axis, value) {
-    //   console.log("updatePanner");
-    //   console.log(this.position.X);
-    //   console.log(axis);
-    //   console.log(value);
-    //   switch (axis) {
-    //     case "X":
-    //       this.panner.positionX.value = value;
-    //       break;
-    //     case "Y":
-    //       this.panner.positionY.value = value;
-    //       break;
-    //     case "Z":
-    //       this.panner.positionZ.value = value;
-    //       break;
-    //   }
-    //   console.log(this.panner);
-    //   console.log(this.listener);
-    // },
+    updateSourceLocationRad() {
+      this.gpsSourceLocation.rad.latitude = this.deg2rad(
+        this.gpsSourceLocation.deg.latitude
+      );
+      this.gpsSourceLocation.rad.longitude = this.deg2rad(
+        this.gpsSourceLocation.deg.longitude
+      );
+    },
     updateListener(axis, value) {
       console.log("updateListener");
       console.log(axis);
@@ -406,135 +318,6 @@ export default {
         this.audioCtx.resume();
       }
     },
-    // rotateListenerX(direction) {
-    //   const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
-    //   const orientationY = this.orientationListenerRad.Y;
-    //   const orientationZ = this.orientationListenerRad.Z;
-    //   switch (direction) {
-    //     case "clockwise":
-    //       this.orientationListenerRad.Z =
-    //         orientationZ * Math.cos(rotationAngle) +
-    //         orientationY * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
-    //       this.orientationListenerRad.Y =
-    //         orientationY * Math.cos(rotationAngle) -
-    //         orientationZ * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
-    //       break;
-    //     case "anticlockwise":
-    //       this.orientationListenerRad.Z =
-    //         orientationZ * Math.cos(rotationAngle) -
-    //         orientationY * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
-    //       this.orientationListenerRad.Y =
-    //         orientationY * Math.cos(rotationAngle) +
-    //         orientationZ * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
-    //       break;
-    //   }
-    //   this.listener.orientationY.value = this.orientationListenerRad.Y;
-    //   this.listener.orientationZ.value = this.orientationListenerRad.Z;
-    //   console.log(this.orientationListenerRad);
-    // },
-    // rotateListenerY(direction) {
-    //   const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
-    //   switch (direction) {
-    //     case "clockwise":
-    //       break;
-    //     case "anticlockwise":
-    //       break;
-    //   }
-    // },
-    // rotateListenerZ(direction) {
-    //   const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
-    //   switch (direction) {
-    //     case "clockwise":
-    //       break;
-    //     case "anticlockwise":
-    //       break;
-    //   }
-    // },
-
-    // // clockwise from Y to Z
-    // rotateSourceX(direction) {
-    //   const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
-    //   const orientationY = this.orientationSourceRad.Y;
-    //   const orientationZ = this.orientationSourceRad.Z;
-    //   switch (direction) {
-    //     case "clockwise":
-    //       this.orientationSourceRad.Z =
-    //         orientationZ * Math.cos(rotationAngle) +
-    //         orientationY * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
-    //       this.orientationSourceRad.Y =
-    //         orientationY * Math.cos(rotationAngle) -
-    //         orientationZ * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
-    //       break;
-    //     case "anticlockwise":
-    //       this.orientationSourceRad.Z =
-    //         orientationZ * Math.cos(rotationAngle) -
-    //         orientationY * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
-    //       this.orientationSourceRad.Y =
-    //         orientationY * Math.cos(rotationAngle) +
-    //         orientationZ * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
-    //       break;
-    //   }
-    //   this.panner.orientationY.value = this.orientationSourceRad.Y;
-    //   this.panner.orientationZ.value = this.orientationSourceRad.Z;
-    //   console.log(this.orientationSourceRad);
-    // },
-    // // clockwise from Z to X
-    // rotateSourceY(direction) {
-    //   const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
-    //   const orientationX = this.orientationSourceRad.X;
-    //   const orientationZ = this.orientationSourceRad.Z;
-    //   switch (direction) {
-    //     case "clockwise":
-    //       this.orientationSourceRad.X =
-    //         orientationX * Math.cos(rotationAngle) +
-    //         orientationZ * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
-    //       this.orientationSourceRad.Z =
-    //         orientationZ * Math.cos(rotationAngle) -
-    //         orientationX * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
-    //       break;
-    //     case "anticlockwise":
-    //       this.orientationSourceRad.X =
-    //         orientationX * Math.cos(rotationAngle) -
-    //         orientationZ * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
-    //       this.orientationSourceRad.Z =
-    //         orientationZ * Math.cos(rotationAngle) +
-    //         orientationX * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
-    //       break;
-    //   }
-    //   this.panner.orientationZ.value = this.orientationSourceRad.Z;
-    //   this.panner.orientationX.value = this.orientationSourceRad.X;
-    //   console.log(this.orientationSourceRad);
-    // },
-
-    // // clockwise from X to Y
-    // //
-    // rotateSourceZ(direction) {
-    //   const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
-    //   const orientationX = this.orientationSourceRad.X;
-    //   const orientationY = this.orientationSourceRad.Y;
-    //   switch (direction) {
-    //     case "clockwise":
-    //       console.log("Spin Right");
-    //       this.orientationSourceRad.Y =
-    //         orientationY * Math.cos(rotationAngle) +
-    //         orientationX * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
-    //       this.orientationSourceRad.X =
-    //         orientationX * Math.cos(rotationAngle) -
-    //         orientationY * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
-    //       break;
-    //     case "anticlockwise":
-    //       this.orientationSourceRad.Y =
-    //         orientationY * Math.cos(rotationAngle) -
-    //         orientationX * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
-    //       this.orientationSourceRad.X =
-    //         orientationX * Math.cos(rotationAngle) +
-    //         orientationY * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
-    //       break;
-    //   }
-    //   this.panner.orientationY.value = this.orientationSourceRad.Y;
-    //   this.panner.orientationX.value = this.orientationSourceRad.X;
-    //   console.log(this.orientationSourceRad);
-    // },
     getDistanceFromGPSinKm(lat1, lon1, lat2, lon2) {
       var R = 6371; // Radius of the earth in km
       var dLat = this.deg2rad(lat2 - lat1); // deg2rad below
@@ -556,10 +339,28 @@ export default {
       return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            this.gpsListenerLocation = pos;
+            console.log("Pos : ");
+            console.log(pos);
+            var coordsGPSdeg = {
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+            };
+            var coordsGPSrad = {
+              latitude: this.deg2rad(coordsGPSdeg.latitude),
+              longitude: this.deg2rad(coordsGPSdeg.longitude),
+            };
+            this.gpsListenerLocation.deg = coordsGPSdeg;
+            this.gpsListenerLocation.rad = coordsGPSrad;
+            // this.gpsListenerLocation.coords.latitude = this.deg2rad(
+            //   this.gpsListenerLocation.coords.latitude
+            // );
+            // this.gpsListenerLocation.coords.longitude = this.deg2rad(
+            //   this.gpsListenerLocation.coords.longitude
+            // );
             resolve(pos);
           },
           (err) => {
+            //this.error(err);
             reject(err);
           }
         );
@@ -579,24 +380,34 @@ export default {
       var R = 6371; // Earth radius in km
       await this.updateGPSListenerPosition();
 
+      // var differenceGPS = {
+      //   latitude:
+      //     this.gpsSourceLocation.latitude -
+      //     this.gpsListenerLocation.coords.latitude,
+      //   longitude:
+      //     this.gpsSourceLocation.longitude -
+      //     this.gpsListenerLocation.coords.longitude,
+      // };
+      // TODO passer des degres en radians dans une fonction pour la source --> le faire dans le q-input
+      var sourceLatitude = this.gpsSourceLocation.rad.latitude;
+      var sourceLongitude = this.gpsSourceLocation.rad.longitude;
+      var listenerLatitude = this.gpsListenerLocation.rad.latitude;
+      var listenerLongitude = this.gpsListenerLocation.rad.longitude;
+
       var differenceCartesian = {
         X:
           R *
-          (Math.cos(this.gpsSourceLocation.latitude) *
-            Math.cos(this.gpsSourceLocation.longitude) -
-            Math.cos(this.gpsListenerLocation.coords.latitude) *
-              Math.cos(this.gpsListenerLocation.coords.longitude)),
+          (Math.cos(sourceLatitude) * Math.cos(sourceLongitude) -
+            Math.cos(listenerLatitude) * Math.cos(listenerLongitude)),
         Y:
           R *
-          (Math.cos(this.gpsSourceLocation.latitude) *
-            Math.sin(this.gpsSourceLocation.longitude) -
-            Math.cos(this.gpsListenerLocation.coords.latitude) *
-              Math.sin(this.gpsListenerLocation.coords.longitude)),
-        Z:
-          R *
-          (Math.sin(this.gpsSourceLocation.latitude) -
-            Math.sin(this.gpsListenerLocation.coords.latitude)),
+          (Math.cos(sourceLatitude) * Math.sin(sourceLongitude) -
+            Math.cos(listenerLatitude) * Math.sin(listenerLongitude)),
+        Z: R * (Math.sin(sourceLatitude) - Math.sin(listenerLatitude)),
       };
+
+      // console.log("Difference GPS : ");
+      // console.log(differenceGPS);
 
       console.log("Difference Cartesian : ");
       console.log(differenceCartesian);
@@ -616,6 +427,9 @@ export default {
       console.log(differenceCartesian);
       console.log("Position Listener");
       console.log(this.positionListener);
+
+      //setTimeout(this.updateCartesianListenerPosition(), 2000);
+      this.updateCartesianListenerPosition();
     },
   },
 };
