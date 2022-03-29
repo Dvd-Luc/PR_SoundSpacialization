@@ -14,6 +14,11 @@ const routes = [
     component: () => import("layouts/MainLayout.vue"),
     children: [{ path: "", component: () => import("src/pages/Spacialization.vue") }],
   },
+  {
+    path: "/testGeoloc",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("src/pages/Test_geoloc.vue") }],
+  },
 
   // Always leave this as last one,
   // but you can also remove it
