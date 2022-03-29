@@ -338,6 +338,7 @@ export default {
       return deg * (Math.PI / 180);
     },
     updateListenerGeoloc(pos) {
+      console.log(pos);
       var coordsGPSdeg = {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
