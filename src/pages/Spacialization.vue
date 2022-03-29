@@ -192,6 +192,15 @@ export default {
           options
         );
       }
+      if (!window.DeviceOrientationEvent) {
+        console.log("Orientation not available");
+        throw new Error("Orientation not available on this device");
+      }
+
+      window.addEventListener(
+        "deviceorientation",
+        this.updateCartesianListenerOrientation
+      );
       console.log(this.listener);
 
       // let's use the class method for creating our panner node and pass in all those parameters we've set.
@@ -422,6 +431,7 @@ export default {
       console.log(this.positionListener);
     },
     updateCartesianListenerOrientation(event) {
+      console.log("UpdateCartesianListener");
       // forward
       var phi = this.deg2rad(event.alpha);
       var theta = this.deg2rad(event.gamma);
