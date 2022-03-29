@@ -122,13 +122,13 @@ export default {
       },
       positionListener: { X: 0, Y: 0, Z: 0 },
       position: { X: 0, Y: 0, Z: 0 },
-      orientationListenerRad: {
+      orientationListener: {
         forwardX: 0,
-        forwardY: 0,
-        forwardZ: 1,
+        forwardY: 1,
+        forwardZ: 0,
         upX: 0,
-        upY: 1,
-        upZ: 0,
+        upY: 0,
+        upZ: 1,
       },
       orientationSourceRad: { X: 0, Y: 0, Z: -1 },
       pannerSettings: {
@@ -181,8 +181,6 @@ export default {
       if (!("geolocation" in navigator)) {
         console.log("No Geolocation available");
       } else {
-        //this.updateCartesianListenerPosition();
-
         const options = {
           enableHighAccuracy: false,
           timeout: 5000,
@@ -384,7 +382,6 @@ export default {
       var R = 6371 * 1000; // Earth radius in m
       this.updateListenerGeoloc(pos);
 
-      // TODO passer des degres en radians dans une fonction pour la source --> le faire dans le q-input
       var sourceLatitude = this.gpsSourceLocation.rad.latitude;
       var sourceLongitude = this.gpsSourceLocation.rad.longitude;
       var listenerLatitude = this.gpsListenerLocation.rad.latitude;
@@ -393,13 +390,13 @@ export default {
       var differenceCartesian = {
         X:
           R *
-          (Math.cos(sourceLatitude) * Math.cos(sourceLongitude) -
-            Math.cos(listenerLatitude) * Math.cos(listenerLongitude)),
-        Y:
-          R *
           (Math.cos(sourceLatitude) * Math.sin(sourceLongitude) -
             Math.cos(listenerLatitude) * Math.sin(listenerLongitude)),
-        Z: R * (Math.sin(sourceLatitude) - Math.sin(listenerLatitude)),
+        Y:
+          R *
+          (Math.sin(sourceLatitude) * Math.sin(sourceLongitude) -
+            Math.sin(listenerLatitude) * Math.sin(listenerLongitude)),
+        Z: R * (Math.cos(sourceLatitude) - Math.cos(listenerLatitude)),
       };
 
       // console.log("Difference GPS : ");
@@ -423,6 +420,20 @@ export default {
       console.log(differenceCartesian);
       console.log("Position Listener");
       console.log(this.positionListener);
+    },
+    updateCartesianListenerOrientation(event) {
+      // forward
+      var phi = this.deg2rad(event.alpha);
+      var theta = this.deg2rad(event.gamma);
+
+      this.orientationListener.forwardX = Math.sin(theta) * Math.cos(phi);
+      this.listener.forwardX.value = this.orientationListener.forwardX;
+      this.orientationListener.forwardY = Math.sin(theta) * Math.sin(phi);
+      this.listener.forwardY.value = this.orientationListener.forwardY;
+      this.orientationListener.forwardZ = Math.cos(theta);
+      this.listener.forwardZ.value = this.orientationListener.forwardZ;
+
+      //up
     },
   },
 };
