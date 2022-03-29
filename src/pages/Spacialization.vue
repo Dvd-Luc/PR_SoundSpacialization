@@ -110,7 +110,7 @@ export default {
   name: "Spacialization",
   data() {
     return {
-      localisationCtx: null,
+      gpsTracker: null,
       audioCtx: null,
       listener: null,
       track: null,
@@ -137,7 +137,7 @@ export default {
         outerCone: 0,
         outerGain: 0,
         distanceModel: "inverse",
-        maxDistance: 10000,
+        maxDistance: 100,
         refDistance: 1,
         rollOff: 1,
         positionX: 0, //this.position.X, Il faut faire un computed
@@ -181,16 +181,18 @@ export default {
       if (!("geolocation" in navigator)) {
         console.log("No Geolocation available");
       } else {
-        this.updateCartesianListenerPosition();
-        // const options = {
-        //   enableHighAccuracy: false,
-        //   timeout: 5000,
-        // };
-        // navigator.geolocation.watchPosition(
-        //   this.updateCartesianListenerPosition(),
-        //   this.error,
-        //   options
-        // );
+        //this.updateCartesianListenerPosition();
+
+        const options = {
+          enableHighAccuracy: false,
+          timeout: 5000,
+          maximumAge: 0,
+        };
+        this.gpsTracker = navigator.geolocation.watchPosition(
+          this.updateCartesianListenerPosition,
+          this.error,
+          options
+        );
       }
       console.log(this.listener);
 
@@ -335,59 +337,53 @@ export default {
     deg2rad(deg) {
       return deg * (Math.PI / 180);
     },
-    async updateGPSListenerPosition() {
-      return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            console.log("Pos : ");
-            console.log(pos);
-            var coordsGPSdeg = {
-              latitude: pos.coords.latitude,
-              longitude: pos.coords.longitude,
-            };
-            var coordsGPSrad = {
-              latitude: this.deg2rad(coordsGPSdeg.latitude),
-              longitude: this.deg2rad(coordsGPSdeg.longitude),
-            };
-            this.gpsListenerLocation.deg = coordsGPSdeg;
-            this.gpsListenerLocation.rad = coordsGPSrad;
-            // this.gpsListenerLocation.coords.latitude = this.deg2rad(
-            //   this.gpsListenerLocation.coords.latitude
-            // );
-            // this.gpsListenerLocation.coords.longitude = this.deg2rad(
-            //   this.gpsListenerLocation.coords.longitude
-            // );
-            resolve(pos);
-          },
-          (err) => {
-            //this.error(err);
-            reject(err);
-          }
-        );
-      });
-      // navigator.geolocation.getCurrentPosition(
-      //   (pos) => {
-      //     this.gpsListenerLocation = pos;
-      //     //console.log(this.gpsListenerLocation.coords.latitude);
-      //   },
-      //   (err) => {
-      //     console.log(err);
-      //     new Error(err);
-      //   }
-      // );
+    updateListenerGeoloc(pos) {
+      var coordsGPSdeg = {
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+      };
+      var coordsGPSrad = {
+        latitude: this.deg2rad(coordsGPSdeg.latitude),
+        longitude: this.deg2rad(coordsGPSdeg.longitude),
+      };
+      this.gpsListenerLocation.deg = coordsGPSdeg;
+      this.gpsListenerLocation.rad = coordsGPSrad;
     },
-    async updateCartesianListenerPosition() {
-      var R = 6371; // Earth radius in km
-      await this.updateGPSListenerPosition();
+    // async updateGPSListenerPosition() {
+    //   return new Promise((resolve, reject) => {
+    //     navigator.geolocation.getCurrentPosition(
+    //       (pos) => {
+    //         console.log("Pos : ");
+    //         console.log(pos);
+    //         var coordsGPSdeg = {
+    //           latitude: pos.coords.latitude,
+    //           longitude: pos.coords.longitude,
+    //         };
+    //         var coordsGPSrad = {
+    //           latitude: this.deg2rad(coordsGPSdeg.latitude),
+    //           longitude: this.deg2rad(coordsGPSdeg.longitude),
+    //         };
+    //         this.gpsListenerLocation.deg = coordsGPSdeg;
+    //         this.gpsListenerLocation.rad = coordsGPSrad;
+    //         // this.gpsListenerLocation.coords.latitude = this.deg2rad(
+    //         //   this.gpsListenerLocation.coords.latitude
+    //         // );
+    //         // this.gpsListenerLocation.coords.longitude = this.deg2rad(
+    //         //   this.gpsListenerLocation.coords.longitude
+    //         // );
+    //         resolve(pos);
+    //       },
+    //       (err) => {
+    //         //this.error(err);
+    //         reject(err);
+    //       }
+    //     );
+    //   });
+    // },
+    updateCartesianListenerPosition(pos) {
+      var R = 6371 * 1000; // Earth radius in m
+      this.updateListenerGeoloc(pos);
 
-      // var differenceGPS = {
-      //   latitude:
-      //     this.gpsSourceLocation.latitude -
-      //     this.gpsListenerLocation.coords.latitude,
-      //   longitude:
-      //     this.gpsSourceLocation.longitude -
-      //     this.gpsListenerLocation.coords.longitude,
-      // };
       // TODO passer des degres en radians dans une fonction pour la source --> le faire dans le q-input
       var sourceLatitude = this.gpsSourceLocation.rad.latitude;
       var sourceLongitude = this.gpsSourceLocation.rad.longitude;
@@ -435,7 +431,7 @@ export default {
 };
 
 // BOOMBOX FUNCTIONALITY HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2
-const audioElement = document.querySelector("audio");
+// const audioElement = document.querySelector("audio");
 
-const playButton = document.querySelector(".tape-controls-play");
+// const playButton = document.querySelector(".tape-controls-play");
 </script>
