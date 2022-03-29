@@ -338,7 +338,6 @@ export default {
       return deg * (Math.PI / 180);
     },
     updateListenerGeoloc(pos) {
-      console.log(pos);
       var coordsGPSdeg = {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
@@ -383,8 +382,6 @@ export default {
     // },
     updateCartesianListenerPosition(pos) {
       var R = 6371 * 1000; // Earth radius in m
-      console.log("Avant appel fonction updateListenerGeoloc");
-      console.log(pos);
       this.updateListenerGeoloc(pos);
 
       // TODO passer des degres en radians dans une fonction pour la source --> le faire dans le q-input
@@ -426,9 +423,6 @@ export default {
       console.log(differenceCartesian);
       console.log("Position Listener");
       console.log(this.positionListener);
-
-      //setTimeout(this.updateCartesianListenerPosition(), 2000);
-      this.updateCartesianListenerPosition();
     },
   },
 };
