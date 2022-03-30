@@ -190,57 +190,111 @@
         </div>
       </div>
     </div>
-
-    <div id="rotate-source">
-      <h3>Rotate Source</h3>
-      <div class="row q-col-gutter-sm">
-        <div class="column">
-          <q-btn
-            @click="rotateSourceX('clockwise')"
-            color="white"
-            text-color="black"
-          >
-            <span>Clockwise X</span>
-          </q-btn>
-          <q-btn
-            @click="rotateSourceX('anticlockwise')"
-            color="white"
-            text-color="black"
-          >
-            <span>Anticlockwise X</span>
-          </q-btn>
+    <div class="row q-col-gutter-sm">
+      <div id="rotate-source">
+        <h3>Rotate Source</h3>
+        <div class="row q-col-gutter-sm">
+          <div class="column">
+            <q-btn
+              @click="rotateSourceX('clockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Clockwise X</span>
+            </q-btn>
+            <q-btn
+              @click="rotateSourceX('anticlockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Anticlockwise X</span>
+            </q-btn>
+          </div>
+          <div class="column">
+            <q-btn
+              @click="rotateSourceY('clockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Clockwise Y</span>
+            </q-btn>
+            <q-btn
+              @click="rotateSourceY('anticlockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Anticlockwise Y</span>
+            </q-btn>
+          </div>
+          <div class="column">
+            <q-btn
+              @click="rotateSourceZ('clockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Clockwise Z</span>
+            </q-btn>
+            <q-btn
+              @click="rotateSourceX('anticlockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Anticlockwise Z</span>
+            </q-btn>
+          </div>
         </div>
-        <div class="column">
-          <q-btn
-            @click="rotateSourceY('clockwise')"
-            color="white"
-            text-color="black"
-          >
-            <span>Clockwise Y</span>
-          </q-btn>
-          <q-btn
-            @click="rotateSourceY('anticlockwise')"
-            color="white"
-            text-color="black"
-          >
-            <span>Anticlockwise Y</span>
-          </q-btn>
-        </div>
-        <div class="column">
-          <q-btn
-            @click="rotateSourceZ('clockwise')"
-            color="white"
-            text-color="black"
-          >
-            <span>Clockwise Z</span>
-          </q-btn>
-          <q-btn
-            @click="rotateSourceX('anticlockwise')"
-            color="white"
-            text-color="black"
-          >
-            <span>Anticlockwise Z</span>
-          </q-btn>
+      </div>
+      <div id="rotate-Listener">
+        <h3>Rotate Listener</h3>
+        <div class="row q-col-gutter-sm">
+          <div class="column">
+            <q-btn
+              @click="rotateListenerX('clockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Clockwise X</span>
+            </q-btn>
+            <q-btn
+              @click="rotateListenerX('anticlockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Anticlockwise X</span>
+            </q-btn>
+          </div>
+          <div class="column">
+            <q-btn
+              @click="rotateListenerY('clockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Clockwise Y</span>
+            </q-btn>
+            <q-btn
+              @click="rotateListenerY('anticlockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Anticlockwise Y</span>
+            </q-btn>
+          </div>
+          <div class="column">
+            <q-btn
+              @click="rotateListenerZ('clockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Clockwise Z</span>
+            </q-btn>
+            <q-btn
+              @click="rotateListenerZ('anticlockwise')"
+              color="white"
+              text-color="black"
+            >
+              <span>Anticlockwise Z</span>
+            </q-btn>
+          </div>
         </div>
       </div>
     </div>
@@ -569,49 +623,86 @@ export default {
         this.audioCtx.resume();
       }
     },
+    //Clockwise from Y to Z
     rotateListenerX(direction) {
       const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
-      const orientationY = this.orientationListenerRad.Y;
-      const orientationZ = this.orientationListenerRad.Z;
+      const orientationY = this.orientationListenerRad.forwardY;
+      const orientationZ = this.orientationListenerRad.forwardZ;
       switch (direction) {
         case "clockwise":
-          this.orientationListenerRad.Z =
+          this.orientationListenerRad.forwardZ =
             orientationZ * Math.cos(rotationAngle) +
             orientationY * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
-          this.orientationListenerRad.Y =
+          this.orientationListenerRad.forwardY =
             orientationY * Math.cos(rotationAngle) -
             orientationZ * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
           break;
         case "anticlockwise":
-          this.orientationListenerRad.Z =
+          this.orientationListenerRad.forwardZ =
             orientationZ * Math.cos(rotationAngle) -
             orientationY * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
-          this.orientationListenerRad.Y =
+          this.orientationListenerRad.forwardY =
             orientationY * Math.cos(rotationAngle) +
             orientationZ * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
           break;
       }
-      this.listener.orientationY.value = this.orientationListenerRad.Y;
-      this.listener.orientationZ.value = this.orientationListenerRad.Z;
-      console.log(this.orientationListenerRad);
+      this.listener.forwardY.value = this.orientationListenerRad.forwardY;
+      this.listener.forwardZ.value = this.orientationListenerRad.forwardZ;
+      console.log(this.listener);
     },
+    // Clockwise from Z to X
     rotateListenerY(direction) {
       const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const orientationX = this.orientationListenerRad.forwardX;
+      const orientationZ = this.orientationListenerRad.forwardZ;
       switch (direction) {
         case "clockwise":
+          this.orientationListenerRad.forwardX =
+            orientationX * Math.cos(rotationAngle) +
+            orientationZ * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
+          this.orientationListenerRad.forwardZ =
+            orientationZ * Math.cos(rotationAngle) -
+            orientationX * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
           break;
         case "anticlockwise":
+          this.orientationListenerRad.forwardX =
+            orientationX * Math.cos(rotationAngle) -
+            orientationZ * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
+          this.orientationListenerRad.forwardZ =
+            orientationZ * Math.cos(rotationAngle) +
+            orientationX * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
           break;
       }
+      this.listener.forwardX.value = this.orientationListenerRad.forwardX;
+      this.listener.forwardZ.value = this.orientationListenerRad.forwardZ;
+      console.log(this.listener);
     },
+    // Clockwise from Y to X
     rotateListenerZ(direction) {
       const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const orientationX = this.orientationListenerRad.forwardX;
+      const orientationY = this.orientationListenerRad.forwardY;
       switch (direction) {
         case "clockwise":
+          this.orientationListenerRad.forwardX =
+            orientationX * Math.cos(rotationAngle) +
+            orientationY * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
+          this.orientationListenerRad.forwardY =
+            orientationY * Math.cos(rotationAngle) -
+            orientationX * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
           break;
         case "anticlockwise":
+          this.orientationListenerRad.forwardX =
+            orientationX * Math.cos(rotationAngle) -
+            orientationY * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
+          this.orientationListenerRad.forwardY =
+            orientationY * Math.cos(rotationAngle) +
+            orientationX * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
           break;
       }
+      this.listener.forwardX.value = this.orientationListenerRad.forwardX;
+      this.listener.forwardY.value = this.orientationListenerRad.forwardY;
+      console.log(this.listener);
     },
 
     // clockwise from Y to Z
@@ -669,7 +760,7 @@ export default {
       console.log(this.orientationSourceRad);
     },
 
-    // clockwise from X to Y
+    // clockwise from Y to X
     //
     rotateSourceZ(direction) {
       const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
@@ -678,20 +769,20 @@ export default {
       switch (direction) {
         case "clockwise":
           console.log("Spin Right");
-          this.orientationSourceRad.Y =
-            orientationY * Math.cos(rotationAngle) +
-            orientationX * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
-          this.orientationSourceRad.X =
-            orientationX * Math.cos(rotationAngle) -
-            orientationY * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
-          break;
-        case "anticlockwise":
-          this.orientationSourceRad.Y =
-            orientationY * Math.cos(rotationAngle) -
-            orientationX * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
           this.orientationSourceRad.X =
             orientationX * Math.cos(rotationAngle) +
-            orientationY * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
+            orientationY * Math.sin(rotationAngle); // cos(a-b) = cos(a)cos(b)+sin(a)sin(b)
+          this.orientationSourceRad.Y =
+            orientationY * Math.cos(rotationAngle) -
+            orientationX * Math.sin(rotationAngle); // sin(a-b) = sin(a)cos(b)-cos(a)sin(b)
+          break;
+        case "anticlockwise":
+          this.orientationSourceRad.X =
+            orientationX * Math.cos(rotationAngle) -
+            orientationY * Math.sin(rotationAngle); // cos(a+b) = cos(a)cos(b)-sin(a)sin(b)
+          this.orientationSourceRad.Y =
+            orientationY * Math.cos(rotationAngle) +
+            orientationX * Math.sin(rotationAngle); // sin(a+b) = sin(a)cos(b)+cos(a)sin(b)
           break;
       }
       this.panner.orientationY.value = this.orientationSourceRad.Y;

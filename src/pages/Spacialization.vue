@@ -197,10 +197,10 @@ export default {
         throw new Error("Orientation not available on this device");
       }
 
-      window.addEventListener(
-        "deviceorientation",
-        this.updateCartesianListenerOrientation
-      );
+      // window.addEventListener(
+      //   "deviceorientation",
+      //   this.updateCartesianListenerOrientation
+      // );
       console.log(this.listener);
 
       // let's use the class method for creating our panner node and pass in all those parameters we've set.
