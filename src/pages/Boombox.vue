@@ -166,7 +166,11 @@
         </div>
       </section>
     </div>
-    <div id="move-controls" aria-labelledby="move-boombox">
+    <div
+      id="move-controls"
+      class="row q-col-gutter-sm"
+      aria-labelledby="move-boombox"
+    >
       <div id="move-source">
         <h3 id="move-boombox">Move Boombox</h3>
         <div class="row q-col-gutter-sm">
