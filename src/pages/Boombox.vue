@@ -167,39 +167,102 @@
       </section>
     </div>
     <div id="move-controls" aria-labelledby="move-boombox">
-      <h3 id="move-boombox">Move Boombox</h3>
-      <div class="row q-col-gutter-sm">
-        <div class="column">
-          <q-btn @click="moveBoombox('left')" color="white" text-color="black">
-            <span>Left</span>
-          </q-btn>
-          <q-btn @click="moveBoombox('right')" color="white" text-color="black">
-            <span>Right</span>
-          </q-btn>
+      <div id="move-source">
+        <h3 id="move-boombox">Move Boombox</h3>
+        <div class="row q-col-gutter-sm">
+          <div class="column">
+            <q-btn
+              @click="moveBoombox('left')"
+              color="white"
+              text-color="black"
+            >
+              <span>Left</span>
+            </q-btn>
+            <q-btn
+              @click="moveBoombox('right')"
+              color="white"
+              text-color="black"
+            >
+              <span>Right</span>
+            </q-btn>
+          </div>
+          <div class="column">
+            <q-btn @click="moveBoombox('up')" color="white" text-color="black">
+              <span>Up</span>
+            </q-btn>
+            <q-btn
+              @click="moveBoombox('down')"
+              color="white"
+              text-color="black"
+            >
+              <span>Down</span>
+            </q-btn>
+          </div>
+          <div class="column">
+            <q-btn
+              @click="moveBoombox('backward')"
+              color="white"
+              text-color="black"
+            >
+              <span>Backward</span>
+            </q-btn>
+            <q-btn
+              @click="moveBoombox('forward')"
+              color="white"
+              text-color="black"
+            >
+              <span>Forward</span>
+            </q-btn>
+          </div>
         </div>
-        <div class="column">
-          <q-btn @click="moveBoombox('up')" color="white" text-color="black">
-            <span>Up</span>
-          </q-btn>
-          <q-btn @click="moveBoombox('down')" color="white" text-color="black">
-            <span>Down</span>
-          </q-btn>
-        </div>
-        <div class="column">
-          <q-btn
-            @click="moveBoombox('backward')"
-            color="white"
-            text-color="black"
-          >
-            <span>Backward</span>
-          </q-btn>
-          <q-btn
-            @click="moveBoombox('forward')"
-            color="white"
-            text-color="black"
-          >
-            <span>Forward</span>
-          </q-btn>
+      </div>
+      <div id="move-listener">
+        <h3 id="move-listener">Move Listener</h3>
+        <div class="row q-col-gutter-sm">
+          <div class="column">
+            <q-btn
+              @click="moveListener('left')"
+              color="white"
+              text-color="black"
+            >
+              <span>Left</span>
+            </q-btn>
+            <q-btn
+              @click="moveListener('right')"
+              color="white"
+              text-color="black"
+            >
+              <span>Right</span>
+            </q-btn>
+          </div>
+          <div class="column">
+            <q-btn @click="moveListener('up')" color="white" text-color="black">
+              <span>Up</span>
+            </q-btn>
+            <q-btn
+              @click="moveListener('down')"
+              color="white"
+              text-color="black"
+            >
+              <span>Down</span>
+            </q-btn>
+          </div>
+          <div class="column">
+            <q-btn
+              @click="moveListener('backward')"
+              color="white"
+              text-color="black"
+            >
+              <span>Backward</span>
+            </q-btn>
+            <q-btn
+              @click="moveListener('forward')"
+              color="white"
+              text-color="black"
+            >
+              <span>Forward</span>
+            </q-btn>
+          </div>
         </div>
       </div>
     </div>
@@ -495,10 +558,8 @@ export default {
           break;
 
         case "right":
-          console.log(this.pannerSettings.positionX);
           this.pannerSettings.positionX =
             parseFloat(this.pannerSettings.positionX) + step;
-          console.log(this.pannerSettings.positionX);
 
           break;
 
@@ -520,9 +581,45 @@ export default {
       if (this.getDistanceSourceListener() > this.pannerSettings.maxDistance) {
         console.log("Max Dist exceeded");
         this.pannerSettings = tempPannerSettings;
-        console.log(this.pannerSettings);
       } else {
         this.updatePanner();
+      }
+    },
+    moveListener(direction) {
+      //console.log(this.getDistanceSourceListener());
+      const step = this.pannerSettings.maxDistance / 100;
+      let tempListenerPosition = { ...this.positionListener };
+
+      switch (direction) {
+        case "left":
+          this.positionListener.X = parseFloat(this.positionListener.X) - step;
+          break;
+
+        case "up":
+          this.positionListener.Y = parseFloat(this.positionListener.Y) + step;
+          break;
+
+        case "right":
+          this.positionListener.X = parseFloat(this.positionListener.X) + step;
+          break;
+
+        case "down":
+          this.positionListener.Y = parseFloat(this.positionListener.Y) - step;
+          break;
+
+        case "backward":
+          this.positionListener.Z = parseFloat(this.positionListener.Z) - step;
+          break;
+
+        case "forward":
+          this.positionListener.Z = parseFloat(this.positionListener.Z) + step;
+          break;
+      }
+      if (this.getDistanceSourceListener() > this.pannerSettings.maxDistance) {
+        console.log("Max Dist exceeded");
+        this.positionListener = tempListenerPosition;
+      } else {
+        this.updateListener();
       }
     },
     getDistanceSourceListener(stepX = 0, stepY = 0, stepZ = 0) {
@@ -592,26 +689,11 @@ export default {
       this.panner.positionY.value = this.pannerSettings.positionY;
       this.panner.positionZ.value = this.pannerSettings.positionZ;
     },
-    updateListener(axis, value) {
+    updateListener() {
       console.log("updateListener");
-      console.log(axis);
-      console.log(value);
-      switch (axis) {
-        case "X":
-          this.listener.positionX.value = value;
-          this.positionListener.X = value;
-          break;
-        case "Y":
-          this.listener.positionY.value = value;
-          this.positionListener.Y = value;
-          break;
-        case "Z":
-          this.listener.positionZ.value = value;
-          this.positionListener.Z = value;
-          break;
-      }
-      // console.log(this.panner);
-      // console.log(this.listener);
+      this.listener.positionX.value = this.positionListener.X;
+      this.listener.positionY.value = this.positionListener.Y;
+      this.listener.positionZ.value = this.positionListener.Z;
     },
     async playMusic() {
       // console.log(this.$refs.audioPlayer);
