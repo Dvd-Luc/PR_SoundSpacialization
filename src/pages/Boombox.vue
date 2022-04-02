@@ -59,23 +59,36 @@
             :max="2"
             label="Vol"
           ></q-slider> -->
+          <q-btn
+            v-if="audioPlaying"
+            @click="playMusic()"
+            color="white"
+            text-color="black"
+          >
+            <span>Pause</span>
+          </q-btn>
 
-          <q-btn @click="playMusic()" color="white" text-color="black">
-            <span>Play/Pause</span>
+          <q-btn
+            v-if="!audioPlaying"
+            @click="playMusic()"
+            color="white"
+            text-color="black"
+          >
+            <span>Play</span>
           </q-btn>
           <!-- <button data-playing="false" class="tape-controls-play" role="switch" aria-checked="false">
 					<span>Play/Pause</span>
 				</button> -->
         </section>
       </div>
-      <!--bb-front-->
-
-      <div class="bb-top"></div>
-      <div class="bb-right"></div>
-      <div class="bb-bottom"></div>
-      <div class="bb-left"></div>
-      <div class="bb-back"></div>
     </div>
+
+    <div class="source-parameters">
+      <SourceParameters
+        v-on:updateHRTFDistanceModel="onUpdateChangeHRTFDistanceModel"
+      />
+    </div>
+
     <!-- boombox-body -->
 
     <div id="show position" aria-labelledby="move-boombox"></div>
@@ -298,31 +311,22 @@
         </div>
       </div>
     </div>
-
-    <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
-
-    <!-- <Localisation /> -->
   </q-page>
 </template>
 
 <script>
-import Localisation from "src/components/Localisation";
-// import { Vector } from "src/lib/Vector";
-// import * as gpsMethods from "src/lib/gpsMethods";
-
+import SourceParameters from "src/components/SourceParameters.vue";
 export default {
   name: "Boombox",
   data() {
     return {
       localisationCtx: null,
       audioCtx: null,
+      audioPlaying: false,
       listener: null,
       track: null,
       gainNode: null,
-      gpsListenerLocation: { coords: null },
-      gpsSourceLocation: { latitude: 45.7703307, longitude: 4.880336 },
       positionListener: { X: 0, Y: 0, Z: 0 },
-      position: { X: 0, Y: 0, Z: 0 },
       orientationListenerRad: {
         forwardX: 0,
         forwardY: 0,
@@ -337,13 +341,13 @@ export default {
         innerCone: 360,
         outerCone: 0,
         outerGain: 0,
-        distanceModel: "inverse",
-        maxDistance: 10000,
+        distanceModel: "linear",
+        maxDistance: 100,
         refDistance: 1,
         rollOff: 1,
-        positionX: 0, //this.position.X, Il faut faire un computed
-        positionY: 0, //this.position.Y,
-        positionZ: 0, //this.position.Z,
+        positionX: 0,
+        positionY: 0,
+        positionZ: 0,
         orientationX: 0,
         orientationY: 0,
         orientationZ: 1,
@@ -359,33 +363,29 @@ export default {
       },
     };
   },
-  // components: { Localisation },
+  components: { SourceParameters },
   methods: {
+    onUpdateChangeHRTFDistanceModel(model) {
+      this.pannerSettings.distanceModel = model;
+      this.panner.distanceModel = model;
+      console.log(this.panner);
+    },
     error() {
       console.warn("ERROR(" + err.code + "): " + err.message);
     },
     init() {
       console.log("init method");
-      //const vector = new Vector(1, 2, 3);
-      //console.log(cube(3));
-      //console.log(vector.x);
-      console.log(
-        this.getDistanceFromGPSinKm(45.7703307, 4.880336, 45.7867264, 4.8726016)
-      );
 
-      // console.log(navigator.geolocation.getCurrentPosition());
-      //this.gpsListenerLocation = gpsMethods.locateMe();
-      // console.log(this.gpsListenerLocation);
-      // console.log(17627);
       if (this.listener.positionX) {
-        this.listener.positionX.value = this.position.X;
-        this.listener.positionY.value = this.position.Y;
-        this.listener.positionZ.value = this.position.Z - 12;
+        this.listener.positionX.value = this.positionListener.X;
+        this.listener.positionY.value = this.positionListener.Y;
+        this.listener.positionZ.value = this.positionListener.Z;
       } else {
+        console.log("else set Pos");
         this.listener.setPosition(
-          this.position.X,
-          this.position.Y,
-          this.position.Z - 12
+          this.positionListener.X,
+          this.positionListener.Y,
+          this.positionListener.Z
         );
       }
 
@@ -479,45 +479,71 @@ export default {
       // }
     },
     moveBoombox(direction) {
-      const horizontalStep =
-        (this.bounds.rightBound - this.bounds.leftBound) / 100;
-      const verticalStep =
-        (this.bounds.topBound - this.bounds.bottomBound) / 100;
-      const depthStep =
-        (this.bounds.forwardBound - this.bounds.backwardBound) / 100;
+      //console.log(this.getDistanceSourceListener());
+      const step = this.pannerSettings.maxDistance / 100;
+      let tempPannerSettings = { ...this.pannerSettings };
+
       switch (direction) {
         case "left":
-          if (this.panner.positionX.value > this.bounds.leftBound) {
-            this.panner.positionX.value -= horizontalStep;
-          }
+          this.pannerSettings.positionX =
+            parseFloat(this.pannerSettings.positionX) - step;
           break;
+
         case "up":
-          if (this.panner.positionY.value < this.bounds.topBound) {
-            this.panner.positionY.value += verticalStep;
-          }
-          console.log(this.panner.positionY.value);
+          this.pannerSettings.positionY =
+            parseFloat(this.pannerSettings.positionY) + step;
           break;
+
         case "right":
-          if (this.panner.positionX.value < this.bounds.rightBound) {
-            this.panner.positionX.value += horizontalStep;
-          }
+          console.log(this.pannerSettings.positionX);
+          this.pannerSettings.positionX =
+            parseFloat(this.pannerSettings.positionX) + step;
+          console.log(this.pannerSettings.positionX);
+
           break;
+
         case "down":
-          if (this.panner.positionY.value > this.bounds.bottomBound) {
-            this.panner.positionY.value -= verticalStep;
-          }
+          this.pannerSettings.positionY =
+            parseFloat(this.pannerSettings.positionY) - step;
           break;
+
         case "backward":
-          if (this.panner.positionZ.value > this.bounds.backwardBound) {
-            this.panner.positionZ.value -= depthStep;
-          }
+          this.pannerSettings.positionZ =
+            parseFloat(this.pannerSettings.positionZ) - step;
           break;
+
         case "forward":
-          if (this.panner.positionZ.value < this.bounds.forwardBound) {
-            this.panner.positionZ.value += depthStep;
-          }
+          this.pannerSettings.positionZ =
+            parseFloat(this.pannerSettings.positionZ) + step;
           break;
       }
+      if (this.getDistanceSourceListener() > this.pannerSettings.maxDistance) {
+        console.log("Max Dist exceeded");
+        this.pannerSettings = tempPannerSettings;
+        console.log(this.pannerSettings);
+      } else {
+        this.updatePanner();
+      }
+    },
+    getDistanceSourceListener(stepX = 0, stepY = 0, stepZ = 0) {
+      var res = Math.sqrt(
+        Math.pow(
+          this.pannerSettings.positionX - this.positionListener.X + stepX,
+          2
+        ) +
+          Math.pow(
+            this.pannerSettings.positionY - this.positionListener.Y + stepY,
+            2
+          ) +
+          Math.pow(
+            this.pannerSettings.positionZ - this.positionListener.Z + stepZ,
+            2
+          )
+      );
+      if (res > this.pannerSettings.maxDistance) {
+        console.log("Max Distance exceeded");
+      }
+      return res;
     },
     // moveBoomboxAxis(axis, value) {
     //   if (!isNaN(value)) {
@@ -560,24 +586,11 @@ export default {
     //     console.log("Not a number on axis " + axis);
     //   }
     // },
-    updatePanner(axis, value) {
+    updatePanner() {
       console.log("updatePanner");
-      console.log(this.position.X);
-      console.log(axis);
-      console.log(value);
-      switch (axis) {
-        case "X":
-          this.panner.positionX.value = value;
-          break;
-        case "Y":
-          this.panner.positionY.value = value;
-          break;
-        case "Z":
-          this.panner.positionZ.value = value;
-          break;
-      }
-      console.log(this.panner);
-      console.log(this.listener);
+      this.panner.positionX.value = this.pannerSettings.positionX;
+      this.panner.positionY.value = this.pannerSettings.positionY;
+      this.panner.positionZ.value = this.pannerSettings.positionZ;
     },
     updateListener(axis, value) {
       console.log("updateListener");
@@ -586,12 +599,15 @@ export default {
       switch (axis) {
         case "X":
           this.listener.positionX.value = value;
+          this.positionListener.X = value;
           break;
         case "Y":
           this.listener.positionY.value = value;
+          this.positionListener.Y = value;
           break;
         case "Z":
           this.listener.positionZ.value = value;
+          this.positionListener.Z = value;
           break;
       }
       // console.log(this.panner);
@@ -602,7 +618,6 @@ export default {
       // console.log(this.audioCtx);
       if (!this.audioCtx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
-        console.log(this.listener);
         this.audioCtx = new AudioContext();
         this.listener = this.audioCtx.listener;
         this.init();
@@ -612,8 +627,8 @@ export default {
 
       if (this.audioCtx.state === "running") {
         this.$refs.audioPlayer.paused
-          ? this.$refs.audioPlayer.play()
-          : this.$refs.audioPlayer.pause();
+          ? (this.$refs.audioPlayer.play(), (this.audioPlaying = true))
+          : (this.$refs.audioPlayer.pause(), (this.audioPlaying = false));
       } else {
         console.error("audio context down");
       }
@@ -789,117 +804,10 @@ export default {
       this.panner.orientationX.value = this.orientationSourceRad.X;
       console.log(this.orientationSourceRad);
     },
-    getDistanceFromGPSinKm(lat1, lon1, lat2, lon2) {
-      var R = 6371; // Radius of the earth in km
-      var dLat = this.deg2rad(lat2 - lat1); // deg2rad below
-      var dLon = this.deg2rad(lon2 - lon1);
-      var a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(this.deg2rad(lat1)) *
-          Math.cos(this.deg2rad(lat2)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
-      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      var d = R * c; // Distance in km
-      return d;
-    },
+
     deg2rad(deg) {
       return deg * (Math.PI / 180);
     },
-    async updateGPSListenerPosition() {
-      return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            console.log("Pos : ");
-            console.log(pos);
-            var radPos = {
-              latitude: this.deg2rad(pos.coords.latitude),
-              longitude: this.deg2rad(pos.coords.longitude),
-            };
-            this.gpsListenerLocation.coords = radPos;
-            // this.gpsListenerLocation.coords.latitude = this.deg2rad(
-            //   this.gpsListenerLocation.coords.latitude
-            // );
-            // this.gpsListenerLocation.coords.longitude = this.deg2rad(
-            //   this.gpsListenerLocation.coords.longitude
-            // );
-            resolve(pos);
-          },
-          (err) => {
-            reject(err);
-          }
-        );
-      });
-      // navigator.geolocation.getCurrentPosition(
-      //   (pos) => {
-      //     this.gpsListenerLocation = pos;
-      //     //console.log(this.gpsListenerLocation.coords.latitude);
-      //   },
-      //   (err) => {
-      //     console.log(err);
-      //     new Error(err);
-      //   }
-      // );
-    },
-    async updateCartesianListenerPosition() {
-      var R = 6371; // Earth radius in km
-      await this.updateGPSListenerPosition();
-
-      var differenceGPS = {
-        latitude:
-          this.gpsSourceLocation.latitude -
-          this.gpsListenerLocation.coords.latitude,
-        longitude:
-          this.gpsSourceLocation.longitude -
-          this.gpsListenerLocation.coords.longitude,
-      };
-      // TODO passer des degres en radians dans une fonction pour la source --> le faire dans le q-input
-      var differenceCartesian = {
-        X:
-          R *
-          (Math.cos(this.deg2rad(this.gpsSourceLocation.latitude)) *
-            Math.cos(this.deg2rad(this.gpsSourceLocation.longitude)) -
-            Math.cos(this.gpsListenerLocation.coords.latitude) *
-              Math.cos(this.gpsListenerLocation.coords.longitude)),
-        Y:
-          R *
-          (Math.cos(this.deg2rad(this.gpsSourceLocation.latitude)) *
-            Math.sin(this.deg2rad(this.gpsSourceLocation.longitude)) -
-            Math.cos(this.gpsListenerLocation.coords.latitude) *
-              Math.sin(this.gpsListenerLocation.coords.longitude)),
-        Z:
-          R *
-          (Math.sin(this.deg2rad(this.gpsSourceLocation.latitude)) -
-            Math.sin(this.gpsListenerLocation.coords.latitude)),
-      };
-
-      console.log("Difference GPS : ");
-      console.log(differenceGPS);
-
-      console.log("Difference Cartesian : ");
-      console.log(differenceCartesian);
-      this.positionListener.X = differenceCartesian.X;
-      this.updateListener("X", this.positionListener.X);
-      this.positionListener.Y = differenceCartesian.Y;
-      this.updateListener("Y", this.positionListener.Y);
-      this.positionListener.Z = differenceCartesian.Z;
-      this.updateListener("Z", this.positionListener.Z);
-
-      console.log("Source GPS : ");
-      console.log(this.gpsSourceLocation);
-      console.log("Listener GPS : ");
-      console.log(this.gpsListenerLocation);
-
-      console.log("Difference Cartesian");
-      console.log(differenceCartesian);
-      console.log("Position Listener");
-      console.log(this.positionListener);
-    },
   },
 };
-
-// BOOMBOX FUNCTIONALITY HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~ 2
-const audioElement = document.querySelector("audio");
-
-const playButton = document.querySelector(".tape-controls-play");
 </script>
