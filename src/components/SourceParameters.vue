@@ -64,7 +64,7 @@
       Describes how quickly the volume diminishes with distance.
       <a
         href="https://developer.mozilla.org/en-US/docs/Web/API/PannerNode/refDistance"
-        >RefDistance Documentation</a
+        >Rolloff Documentation</a
       >
     </p>
     <q-input
