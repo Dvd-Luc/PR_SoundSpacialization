@@ -86,6 +86,11 @@
     <div class="source-parameters">
       <SourceParameters
         v-on:updateHRTFDistanceModel="onUpdateChangeHRTFDistanceModel"
+        v-on:updateMaxDistance="onUpdateMaxDistance"
+        v-on:updateRefDistance="onUpdateRefDistance"
+        v-on:updateRollOffFactor="onUpdateRollOffFactor"
+        v-on:updateMovingStep="onUpdateMovingStep"
+        v-on:updateRotatingStep="onUpdateRotatingStep"
       />
     </div>
 
@@ -94,7 +99,7 @@
     <div id="show position" aria-labelledby="move-boombox"></div>
 
     <div id="position-controls" aria-labelledby="get-position-boombox">
-      <h3 id="get-position-boombox">Get Position</h3>
+      <h3 id="get-position-boombox">Source and listener positions</h3>
       <section class="get-position_xy">
         <div class="row q-col-gutter-sm">
           <div class="column">
@@ -104,11 +109,6 @@
               @change="updatePanner('X', pannerSettings.positionX)"
               label="Source X Position"
             ></q-input>
-            <!-- <div>
-              Horizontal Bounds
-              <li>{{ bounds.leftBound }}</li>
-              <li>{{ bounds.rightBound }}</li>
-            </div> -->
           </div>
           <div class="column">
             <q-input
@@ -117,11 +117,6 @@
               @change="updatePanner('Y', pannerSettings.positionY)"
               label="Source Y Position"
             ></q-input>
-            <!-- <div>
-              Vertical Bounds
-              <li>{{ bounds.bottomBound }}</li>
-              <li>{{ bounds.topBound }}</li>
-            </div> -->
           </div>
           <div class="column">
             <q-input
@@ -130,15 +125,10 @@
               @change="updatePanner('Z', pannerSettings.positionZ)"
               label="Source Z Position"
             ></q-input>
-            <!-- <div>
-              Depth Bounds
-              <li>{{ bounds.backwardBound }}</li>
-              <li>{{ bounds.forwardBound }}</li>
-            </div> -->
           </div>
         </div>
 
-        <div id="move-listener" class="row q-col-gutter-sm">
+        <div id="listener-position" class="row q-col-gutter-sm">
           <div class="column">
             <q-input
               standout
@@ -272,7 +262,12 @@
     </div>
     <div class="row q-col-gutter-sm">
       <div id="rotate-source">
-        <h3>Rotate Source</h3>
+        <h3>Source orientation</h3>
+        <p>
+          <b>X : </b>{{ orientationSourceRad.X }} <b>, Y : </b
+          >{{ orientationSourceRad.Y }} <b>, Z : </b
+          >{{ orientationSourceRad.Z }}
+        </p>
         <div class="row q-col-gutter-sm">
           <div class="column">
             <q-btn
@@ -325,7 +320,12 @@
         </div>
       </div>
       <div id="rotate-Listener">
-        <h3>Rotate Listener</h3>
+        <h3>Listener orientation</h3>
+        <p>
+          <b>X : </b>{{ orientationListenerRad.forwardX }} <b>, Y : </b
+          >{{ orientationListenerRad.forwardY }} <b>, Z : </b
+          >{{ orientationListenerRad.forwardZ }}
+        </p>
         <div class="row q-col-gutter-sm">
           <div class="column">
             <q-btn
@@ -409,7 +409,7 @@ export default {
         outerCone: 0,
         outerGain: 0,
         distanceModel: "linear",
-        maxDistance: 100,
+        maxDistance: 10000,
         refDistance: 1,
         rollOff: 1,
         positionX: 0,
@@ -420,22 +420,48 @@ export default {
         orientationZ: 1,
       },
       panner: null,
-      bounds: {
-        topBound: window.innerHeight / 2,
-        bottomBound: -window.innerHeight / 2,
-        rightBound: window.innerWidth / 2,
-        leftBound: -window.innerWidth / 2,
-        forwardBound: 500,
-        backwardBound: -500,
-      },
+      movingStep: 10,
+      rotatingStepDeg: 36,
     };
+  },
+  computed: {
+    rotatingStepRad() {
+      return (this.rotatingStepDeg * Math.PI) / 180;
+    },
   },
   components: { SourceParameters },
   methods: {
     onUpdateChangeHRTFDistanceModel(model) {
       this.pannerSettings.distanceModel = model;
       this.panner.distanceModel = model;
+      console.log("HRTF update");
       console.log(this.panner);
+    },
+    onUpdateMaxDistance(distance) {
+      this.pannerSettings.maxDistance = distance;
+      this.panner.maxDistance = distance;
+      console.log("max dist update");
+      console.log(this.panner);
+    },
+    onUpdateRefDistance(distance) {
+      this.pannerSettings.refDistance = distance;
+      this.panner.refDistance = distance;
+      console.log("ref dist update");
+      console.log(this.panner);
+    },
+    onUpdateRollOffFactor(factor) {
+      this.pannerSettings.rollOff = factor;
+      this.panner.rollOff = factor;
+      console.log("roll off update");
+      console.log(this.panner);
+    },
+    onUpdateMovingStep(step) {
+      this.movingStep = step;
+      console.log("Moving step update");
+    },
+    onUpdateRotatingStep(step) {
+      this.rotatingStepDeg = step;
+      console.log("Rotating step update");
     },
     error() {
       console.warn("ERROR(" + err.code + "): " + err.message);
@@ -547,7 +573,7 @@ export default {
     },
     moveBoombox(direction) {
       //console.log(this.getDistanceSourceListener());
-      const step = this.pannerSettings.maxDistance / 100;
+      const step = this.movingStep;
       let tempPannerSettings = { ...this.pannerSettings };
 
       switch (direction) {
@@ -591,7 +617,7 @@ export default {
     },
     moveListener(direction) {
       //console.log(this.getDistanceSourceListener());
-      const step = this.pannerSettings.maxDistance / 100;
+      const step = this.movingStep;
       let tempListenerPosition = { ...this.positionListener };
 
       switch (direction) {
@@ -646,47 +672,6 @@ export default {
       }
       return res;
     },
-    // moveBoomboxAxis(axis, value) {
-    //   if (!isNaN(value)) {
-    //     switch (axis) {
-    //       case "X":
-    //         if (value <= bounds.rightBound && value >= bounds.leftBound) {
-    //           panner.positionX.value = value;
-    //         } else {
-    //           panner.positionX.value =
-    //             Math.abs(bounds.rightBound - value) >
-    //             Math.abs(bounds.leftBound - value)
-    //               ? bounds.leftBound
-    //               : bounds.rightBound;
-    //         }
-    //         break;
-    //       case "Y":
-    //         if (value <= bounds.topBound && value >= bounds.bottomBound) {
-    //           panner.positionY.value = value;
-    //         } else {
-    //           panner.positionY.value =
-    //             Math.abs(bounds.topBound - value) >
-    //             Math.abs(bounds.bottomBound - value)
-    //               ? bounds.bottomBound
-    //               : bounds.topBound;
-    //         }
-    //         break;
-    //       case "Z":
-    //         if (value <= bounds.forwardBound && value >= bounds.backwardBound) {
-    //           panner.positionZ.value = value;
-    //         } else {
-    //           panner.positionZ.value =
-    //             Math.abs(bounds.forwardBound - value) >
-    //             Math.abs(bounds.backwardBound - value)
-    //               ? bounds.backwardBound
-    //               : bounds.forwardBound;
-    //         }
-    //         break;
-    //     }
-    //   } else {
-    //     console.log("Not a number on axis " + axis);
-    //   }
-    // },
     updatePanner() {
       console.log("updatePanner");
       this.panner.positionX.value = this.pannerSettings.positionX;
@@ -726,7 +711,7 @@ export default {
     },
     //Clockwise from Y to Z
     rotateListenerX(direction) {
-      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const rotationAngle = this.rotatingStepRad; //tenth of a radian per rotation
       const orientationY = this.orientationListenerRad.forwardY;
       const orientationZ = this.orientationListenerRad.forwardZ;
       switch (direction) {
@@ -753,7 +738,7 @@ export default {
     },
     // Clockwise from Z to X
     rotateListenerY(direction) {
-      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const rotationAngle = this.rotatingStepRad; //tenth of a radian per rotation
       const orientationX = this.orientationListenerRad.forwardX;
       const orientationZ = this.orientationListenerRad.forwardZ;
       switch (direction) {
@@ -780,7 +765,7 @@ export default {
     },
     // Clockwise from Y to X
     rotateListenerZ(direction) {
-      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const rotationAngle = this.rotatingStepRad; //tenth of a radian per rotation
       const orientationX = this.orientationListenerRad.forwardX;
       const orientationY = this.orientationListenerRad.forwardY;
       switch (direction) {
@@ -808,7 +793,7 @@ export default {
 
     // clockwise from Y to Z
     rotateSourceX(direction) {
-      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const rotationAngle = this.rotatingStepRad; //tenth of a radian per rotation
       const orientationY = this.orientationSourceRad.Y;
       const orientationZ = this.orientationSourceRad.Z;
       switch (direction) {
@@ -835,7 +820,7 @@ export default {
     },
     // clockwise from Z to X
     rotateSourceY(direction) {
-      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const rotationAngle = this.rotatingStepRad; //tenth of a radian per rotation
       const orientationX = this.orientationSourceRad.X;
       const orientationZ = this.orientationSourceRad.Z;
       switch (direction) {
@@ -864,7 +849,7 @@ export default {
     // clockwise from Y to X
     //
     rotateSourceZ(direction) {
-      const rotationAngle = Math.PI / 10; //tenth of a radian per rotation
+      const rotationAngle = this.rotatingStepRad; //tenth of a radian per rotation
       const orientationX = this.orientationSourceRad.X;
       const orientationY = this.orientationSourceRad.Y;
       switch (direction) {
